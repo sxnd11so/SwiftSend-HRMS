@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SwiftSend - HR Management Portal</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+    <script
+      src="https://kit.fontawesome.com/2edf4de781.js"
+      crossorigin="anonymous"
+    ></script>
+  </head>
+  <body>
+    <!-- Sidebar -->
+    <header>
+      <div class="container">
+        <aside>
+          <div class="top">
+            <div class="logo2">
+              <i class="fa-solid fa-truck"></i>
+              <h1>SwiftSend</h1>
+            </div>
+          </div>
+
+          <div class="sidebar">
+            <ul class="sidebar">
+              <li>
+                <a href="{{ url_for('hr_dashboard') }}" class="active">
+                  <i class="fa-solid fa-house"></i>
+                  <span>Home</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('manageEmployees') }}">
+                  <i class="fa-solid fa-users"></i>
+                  <span>Employees</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('leaveManagement') }}">
+                  <i class="fa-solid fa-calendar-check"></i>
+                  <span>Leave</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('documentManagement') }}">
+                  <i class="fa-solid fa-folder-open"></i>
+                  <span>Document</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('expiryAlerts') }}">
+                  <i class="fa-solid fa-triangle-exclamation"></i>
+                  <span>Expiry Alerts</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('performance') }}">
+                  <i class="fas fa-chart-line"></i> 
+                  <span>Performance</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('reportPage') }}">
+                  <i class="fa-solid fa-chart-bar"></i>
+                  <span>Reports</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('logout') }}" class="logout-btn">
+                  <i class="fa-solid fa-right-from-bracket"></i>
+                  <span>Logout</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </aside>
+      </div>
+    </header>
+
+    <!-- Main Portal Section -->
+    <section class="portal">
+      <h1>HR Management Portal</h1>
+
+      <!-- Flash Messages -->
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }}" style="margin-bottom: 1.5rem;">
+              {{ message }}
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <div class="portal-con">
+        <div class="cards">
+          <!-- Welcome Banner -->
+          <div class="card welcome-banner">
+            <h2>Welcome, {{ user.first_name }} {{ user.last_name }}!</h2>
+            <p>Manage your workforce and HR operations efficiently.</p>
+            <small style="color: #888;">Last login: {{ current_time }}</small>
+          </div>
+
+          <!-- Stats Grid -->
+          <div class="card" style="grid-column: 1 / -1">
+            <div class="card-header">
+              <h3>HR Overview</h3>
+            </div>
+            <div class="stats-grid">
+              <div class="stat-card">
+                <div class="stat-icon blue">
+                  <i class="fa-solid fa-users"></i>
+                </div>
+                <div class="card-value">{{ total_employees }}</div>
+                <div class="card-label">Total Employees</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon orange">
+                  <i class="fa-solid fa-hourglass-half"></i>
+                </div>
+                <div class="card-value">{{ pending_leaves }}</div>
+                <div class="card-label">Pending Leave Requests</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon red">
+                  <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+                <div class="card-value">{{ expiring_docs }}</div>
+                <div class="card-label">Document Alerts</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon green">
+                  <i class="fa-solid fa-user-check"></i>
+                </div>
+                <div class="card-value">{{ active_drivers }}</div>
+                <div class="card-label">Active Drivers</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pending Leave Requests -->
+          <div class="card">
+            <div class="card-header">
+              <h3>Recent Leave Requests</h3>
+              <i class="fa-solid fa-calendar-check"></i>
+            </div>
+            <div class="card-body">
+              {% if recent_leaves %}
+                {% for leave in recent_leaves %}
+                <div class="list-item">
+                  <div class="list-item-content">
+                    <div class="list-item-title">
+                      {{ leave.first_name }} {{ leave.last_name }}
+                    </div>
+                    <div class="list-item-subtitle">
+                      {{ leave.leave_type }} - {{ leave.start_date.strftime('%b %d') }} to {{ leave.end_date.strftime('%b %d, %Y') }}
+                    </div>
+                    <div class="list-item-subtitle">{{ leave.reason or 'No reason provided' }}</div>
+                  </div>
+                  <span class="badge {% if leave.status == 'Pending' %}warning{% elif leave.status == 'Approved' %}success{% else %}danger{% endif %}">
+                    {{ leave.status }}
+                  </span>
+                </div>
+                {% endfor %}
+              {% else %}
+                <p style="text-align: center; color: #999; padding: 2rem;">No recent leave requests</p>
+              {% endif %}
+              <a href="{{ url_for('leaveManagement') }}" style="display: block; text-align: center; margin-top: 1rem; color: #2563eb; text-decoration: none; font-weight: 500;">
+                View All Leave Requests →
+              </a>
+            </div>
+          </div>
+
+          <!-- Document Expiry Alerts -->
+          <div class="card">
+            <div class="card-header">
+              <h3>Document Expiry Alerts</h3>
+              <i class="fa-solid fa-bell"></i>
+            </div>
+            <div class="card-body">
+              {% if expiring_documents %}
+                {% for doc in expiring_documents %}
+                <div class="list-item">
+                  <div class="list-item-content">
+                    <div class="list-item-title">
+                      {{ doc.doc_type }} - {{ doc.first_name }} {{ doc.last_name }}
+                    </div>
+                    <div class="list-item-subtitle">
+                      Expires: {{ doc.expiry_date.strftime('%b %d, %Y') }}
+                      {% if doc.days_until_expiry <= 0 %}
+                        (EXPIRED)
+                      {% else %}
+                        ({{ doc.days_until_expiry }} days)
+                      {% endif %}
+                    </div>
+                  </div>
+                  <span class="badge {% if doc.days_until_expiry <= 0 %}danger{% elif doc.days_until_expiry <= 30 %}warning{% else %}info{% endif %}">
+                    {% if doc.days_until_expiry <= 0 %}
+                      Expired
+                    {% elif doc.days_until_expiry <= 30 %}
+                      Urgent
+                    {% else %}
+                      Expiring Soon
+                    {% endif %}
+                  </span>
+                </div>
+                {% endfor %}
+              {% else %}
+                <p style="text-align: center; color: #999; padding: 2rem;">No expiring documents</p>
+              {% endif %}
+              <a href="{{ url_for('expiryAlerts') }}" style="display: block; text-align: center; margin-top: 1rem; color: #2563eb; text-decoration: none; font-weight: 500;">
+                View All Alerts →
+              </a>
+            </div>
+          </div>
+
+           <!-- Recent Activity -->
+          <div class="card">
+            <div class="card-header">
+              <h3>Recent HR Activity</h3>
+              <i class="fa-solid fa-clock-rotate-left"></i>
+            </div>
+            <div class="card-body">
+              {% if recent_activities %}
+                {% for activity in recent_activities %}
+                <div class="list-item">
+                  <div class="list-item-content">
+                    <div class="list-item-title">
+                      <i class="fa-solid {{ activity.icon }}" style="margin-right: 0.5rem; color: {{ activity.color }};"></i>
+                      {{ activity.action }}
+                    </div>
+                    <div class="list-item-subtitle">{{ activity.details }} - {{ activity.time_ago }}</div>
+                  </div>
+                </div>
+                {% endfor %}
+              {% else %}
+                <p style="text-align: center; color: #999; padding: 2rem;">No recent activity</p>
+              {% endif %}
+            </div>
+          </div>
+
+          <!-- Quick Actions -->
+          <div class="card" style="grid-column: 1 / -1">
+            <div class="card-header">
+              <h3>Quick Actions</h3>
+            </div>
+            <div class="quick-actions">
+              <a href="{{ url_for('manageEmployees') }}" class="action-btn">
+                <i class="fa-solid fa-user-plus"></i>
+                <span>Add Employee</span>
+              </a>
+              <a href="{{ url_for('leaveManagement') }}" class="action-btn">
+                <i class="fa-solid fa-check-circle"></i>
+                <span>Approve Leaves</span>
+              </a>
+              <a href="{{ url_for('documentManagement') }}" class="action-btn">
+                <i class="fa-solid fa-file-upload"></i>
+                <span>Manage Documents</span>
+              </a>
+              <a href="{{ url_for('reportPage') }}" class="action-btn">
+                <i class="fa-solid fa-file-export"></i>
+                <span>Generate Report</span>
+              </a>
+            </div>
+          </div>
+
+
+
+         
+        </div>
+      </div>
+    </section>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+  </body>
+</html>

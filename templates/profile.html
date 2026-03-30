@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SwiftSend - Employee Portal</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+    <script
+      src="https://kit.fontawesome.com/2edf4de781.js"
+      crossorigin="anonymous"
+    ></script>
+  </head>
+  <body>
+    <!-- Sidebar -->
+    <header>
+      <div class="container">
+        <aside>
+          <div class="top">
+            <div class="logo2">
+              <i class="fa-solid fa-truck"></i>
+              <h1>SwiftSend</h1>
+            </div>
+          </div>
+
+          <div class="sidebar">
+            <ul>
+              <li>
+                <a href="{{ url_for('dashboard') }}">
+                  <i class="fa-solid fa-house"></i>
+                  <span>Home</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('profile_page') }}" class="active">
+                  <i class="fa-solid fa-user"></i>
+                  <span>My Profile</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('request_page') }}">
+                  <i class="fa-solid fa-calendar-check"></i>
+                  <span>Leave Request</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('documents_page') }}">
+                  <i class="fa-solid fa-file-alt"></i>
+                  <span>Documents</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('notifications_page') }}">
+                  <i class="fa-solid fa-bell"></i>
+                  <span>Notifications</span>
+                </a>
+              </li>
+              <li>
+                <button
+                  class="logout-btn"
+                  onclick="window.location.href='{{ url_for('logout') }}'"
+                >
+                  <i class="fa-solid fa-right-from-bracket"></i>
+                  <span>Logout</span>
+                </button>
+              </li>
+            </ul>
+          </div>
+        </aside>
+      </div>
+    </header>
+
+    <!-- Profile Page -->
+    <section class="portal">
+      <h1>My Profile</h1>
+
+      <!-- Employee Details -->
+      <div class="document-section">
+        <h2 class="section-title">Employee Details</h2>
+        <p class="section-subtitle">
+          Your personal and job-related information as recorded in the HR system.
+        </p>
+
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Field</th>
+                <th>Information</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Employee ID</strong></td>
+                <td>EMP-{{ "%03d"|format(employee.employee_id) }}</td>
+              </tr>
+              <tr>
+                <td><strong>Full Name</strong></td>
+                <td>{{ employee.first_name }} {{ employee.last_name }}</td>
+              </tr>
+              <tr>
+                <td><strong>Email</strong></td>
+                <td>{{ employee.email }}</td>
+              </tr>
+              <tr>
+                <td><strong>Phone Number</strong></td>
+                <td>{{ employee.phone or 'Not provided' }}</td>
+              </tr>
+              <tr>
+                <td><strong>Position</strong></td>
+                <td>{{ employee.position }}</td>
+              </tr>
+              <tr>
+                <td><strong>Hire Date</strong></td>
+                <td>{{ employee.hire_date.strftime('%Y-%m-%d') if employee.hire_date else 'N/A' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Leave Balance Section -->
+        <div class="table-container" style="margin-top: 2rem">
+          <h3 class="section-title" style="font-size: 1.2rem; margin-bottom: 1rem">Leave Balance</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Leave Type</th>
+                <th>Total Days</th>
+                <th>Used Days</th>
+                <th>Remaining Days</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Annual Leave</strong></td>
+                <td>{{ employee.annual_leave_days }}</td>
+                <td>{{ "%.1f"|format(employee.leave_days_used) }}</td>
+                <td>{{ "%.1f"|format(employee.annual_leave_days - employee.leave_days_used) }}</td>
+              </tr>
+              <tr>
+                <td><strong>Sick Leave</strong></td>
+                <td>{{ employee.sick_leave_days }}</td>
+                <td>-</td>
+                <td>{{ employee.sick_leave_days }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+       
+      </div>
+
+      <!-- Documents Summary -->
+      <div class="document-section" style="margin-top: 2rem">
+        <h2 class="section-title">Documents Summary</h2>
+        <p class="section-subtitle">
+          Overview of uploaded documents associated with your account.
+        </p>
+
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Document Type</th>
+                <th>Issue Date</th>
+                <th>Expiry Date</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if documents %}
+                {% for doc in documents %}
+                <tr>
+                  <td>{{ doc.doc_type }}</td>
+                  <td>{{ doc.issue_date.strftime('%Y-%m-%d') if doc.issue_date else 'N/A' }}</td>
+                  <td>{{ doc.expiry_date.strftime('%Y-%m-%d') if doc.expiry_date else 'No Expiry' }}</td>
+                  <td>
+                    {% if doc.status == 'Valid' %}
+                      <span class="status-badge valid">Valid</span>
+                    {% elif doc.status == 'Expiring' %}
+                      <span class="status-badge expiring">Expiring Soon</span>
+                    {% elif doc.status == 'Expired' %}
+                      <span class="status-badge expired">Expired</span>
+                    {% else %}
+                      <span class="status-badge">{{ doc.status }}</span>
+                    {% endif %}
+                  </td>
+                </tr>
+                {% endfor %}
+              {% else %}
+                <tr>
+                  <td colspan="4" style="text-align: center; padding: 2rem; color: #666;">
+                    No documents found. Please contact HR to upload your documents.
+                  </td>
+                </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+
+        <div style="margin-top: 1.5rem; text-align: center;">
+          <a href="{{ url_for('documents_page') }}" class="btn btn-secondary">
+            <i class="fa-solid fa-folder-open"></i> View All Documents
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+  </body>
+</html>

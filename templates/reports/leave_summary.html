@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://kit.fontawesome.com/2edf4de781.js" crossorigin="anonymous"></script>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <aside>
+                <div class="top">
+                    <div class="logo2">
+                        <i class="fa-solid fa-truck"></i>
+                        <h1>SwiftSend</h1>
+                    </div>
+                </div>
+                <div class="sidebar">
+                    <ul class="sidebar">
+                        <li><a href="{{ url_for('hr_dashboard') }}"><i class="fa-solid fa-house"></i><span>Home</span></a></li>
+                        <li><a href="{{ url_for('manageEmployees') }}"><i class="fa-solid fa-users"></i><span>Employees</span></a></li>
+                        <li><a href="{{ url_for('leaveManagement') }}"><i class="fa-solid fa-calendar-check"></i><span>Leave</span></a></li>
+                        <li><a href="{{ url_for('documentManagement') }}"><i class="fa-solid fa-folder-open"></i><span>Document</span></a></li>
+                        <li><a href="{{ url_for('expiryAlerts') }}"><i class="fa-solid fa-triangle-exclamation"></i><span>Expiry Alerts</span></a></li>
+                        <li><a href="{{ url_for('performance') }}"><i class="fas fa-chart-line"></i><span>Performance</span></a></li>
+                        <li><a href="{{ url_for('reportPage') }}" class="active"><i class="fa-solid fa-chart-bar"></i><span>Reports</span></a></li>
+                        <li><a href="{{ url_for('logout') }}" class="logout-btn"><i class="fa-solid fa-right-from-bracket"></i><span>Logout</span></a></li>
+                    </ul>
+                </div>
+            </aside>
+        </div>
+    </header>
+
+    <section>
+        <div class="portal">
+            <div style="max-width: 1200px; margin: 0 auto">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                    <div>
+                        <h1><i class="fa-solid fa-calendar-days"></i> {{ title }}</h1>
+                        <p style="color: var(--text-muted); margin-top: 0.5rem;">
+                            Generated on: {{ generated_date.strftime('%d %B %Y, %H:%M') }}
+                        </p>
+                    </div>
+                    <a href="{{ url_for('reportPage') }}" class="btn btn-secondary">
+                        <i class="fa-solid fa-arrow-left"></i> Back to Reports
+                    </a>
+                </div>
+
+                <!-- Summary Cards -->
+                <div class="stats-grid" style="margin-bottom: 2rem;">
+                    <div class="stat-card">
+                        <div style="text-align: center;">
+                            <h3 style="color: var(--accent-primary); font-size: 2rem; margin: 0;">{{ data|length }}</h3>
+                            <p style="color: var(--text-muted); margin: 0.5rem 0 0 0;">Total Employees</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div style="text-align: center;">
+                            <h3 style="color: var(--success-color); font-size: 2rem; margin: 0;">
+                                {{ data|selectattr('pending_requests', 'equalto', 0)|list|length }}
+                            </h3>
+                            <p style="color: var(--text-muted); margin: 0.5rem 0 0 0;">No Pending Requests</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div style="text-align: center;">
+                            <h3 style="color: var(--warning-color); font-size: 2rem; margin: 0;">
+                                {{ data|sum(attribute='pending_requests') }}
+                            </h3>
+                            <p style="color: var(--text-muted); margin: 0.5rem 0 0 0;">Total Pending Requests</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div style="text-align: center;">
+                            <h3 style="color: var(--info-color); font-size: 2rem; margin: 0;">
+                                {{ data|sum(attribute='approved_requests') }}
+                            </h3>
+                            <p style="color: var(--text-muted); margin: 0.5rem 0 0 0;">Total Approved Requests</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="document-section">
+                    <h2 class="section-title">
+                        <i class="fa-solid fa-table"></i> Leave Balance Details
+                    </h2>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Employee ID</th>
+                                    <th>Name</th>
+                                    <th>Position</th>
+                                    <th>Annual Leave</th>
+                                    <th>Used Leave</th>
+                                    <th>Remaining Leave</th>
+                                    <th>Utilization</th>
+                                    <th>Pending</th>
+                                    <th>Approved</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for emp in data %}
+                                <tr>
+                                    <td>{{ emp.employee_id }}</td>
+                                    <td><strong>{{ emp.first_name }} {{ emp.last_name }}</strong></td>
+                                    <td><span class="type-badge">{{ emp.position }}</span></td>
+                                    <td>{{ emp.annual_leave_days }} days</td>
+                                    <td>{{ "%.1f"|format(emp.leave_days_used) }} days</td>
+                                    <td>
+                                        <strong style="color: {% if emp.remaining_leave < 5 %}var(--danger-color){% elif emp.remaining_leave < 10 %}var(--warning-color){% else %}var(--success-color){% endif %}">
+                                            {{ "%.1f"|format(emp.remaining_leave) }} days
+                                        </strong>
+                                    </td>
+                                    <td>
+                                        {% set utilization = (emp.leave_days_used / emp.annual_leave_days * 100) if emp.annual_leave_days > 0 else 0 %}
+                                        <span style="color: {% if utilization > 80 %}var(--danger-color){% elif utilization > 60 %}var(--warning-color){% else %}var(--success-color){% endif %}">
+                                            {{ "%.1f"|format(utilization) }}%
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if emp.pending_requests > 0 %}
+                                            <span class="status-badge warning">{{ emp.pending_requests }}</span>
+                                        {% else %}
+                                            <span style="color: var(--text-muted);">0</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if emp.approved_requests > 0 %}
+                                            <span class="status-badge valid">{{ emp.approved_requests }}</span>
+                                        {% else %}
+                                            <span style="color: var(--text-muted);">0</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Key Insights -->
+                <div class="document-section" style="margin-top: 2rem; background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); border-left: 4px solid var(--info-color);">
+                    <h3 style="color: var(--info-color); margin-bottom: 1rem;">
+                        <i class="fa-solid fa-lightbulb"></i> Key Insights
+                    </h3>
+                    <ul style="margin-left: 1.5rem; color: var(--text-primary); line-height: 1.8;">
+                        <li>
+                            <strong>{{ data|selectattr('remaining_leave', 'lt', 5)|list|length }} employee(s)</strong> 
+                            have less than 5 days of leave remaining.
+                        </li>
+                        <li>
+                            Total pending leave requests: <strong>{{ data|sum(attribute='pending_requests') }}</strong>
+                        </li>
+                        <li>
+                            Total approved requests: <strong>{{ data|sum(attribute='approved_requests') }}</strong>
+                        </li>
+                        <li>
+                            Average leave utilization: 
+                            <strong>
+                                {% set total_util = namespace(value=0) %}
+                                {% for emp in data %}
+                                    {% if emp.annual_leave_days > 0 %}
+                                        {% set total_util.value = total_util.value + (emp.leave_days_used / emp.annual_leave_days * 100) %}
+                                    {% endif %}
+                                {% endfor %}
+                                {{ "%.1f"|format(total_util.value / data|length if data|length > 0 else 0) }}%
+                            </strong>
+                        </li>
+                    </ul>
+                </div>
+
+                <div style="margin-top: 2rem; text-align: center;">
+                    <button onclick="window.print()" class="btn btn-primary">
+                        <i class="fa-solid fa-print"></i> Print Report
+                    </button>
+                    <a href="{{ url_for('export_report', format='csv') }}" class="btn btn-success">
+                        <i class="fa-solid fa-download"></i> Download CSV
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+</body>
+</html>

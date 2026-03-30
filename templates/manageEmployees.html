@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SwiftSend - Manage Employees</title>
+
+    <!-- Styles -->
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+
+    <!-- Font Awesome -->
+    <script
+      src="https://kit.fontawesome.com/2edf4de781.js"
+      crossorigin="anonymous"
+    ></script>
+  </head>
+  <body>
+    <!-- Sidebar -->
+    <header>
+      <div class="container">
+        <aside>
+          <div class="top">
+            <div class="logo2">
+              <i class="fa-solid fa-truck"></i>
+              <h1>SwiftSend</h1>
+            </div>
+          </div>
+
+          <div class="sidebar">
+            <ul class="sidebar">
+              <li>
+                <a href="{{ url_for('hr_dashboard') }}">
+                  <i class="fa-solid fa-house"></i>
+                  <span>Home</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('manageEmployees') }}" class="active">
+                  <i class="fa-solid fa-users"></i>
+                  <span>Employees</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('leaveManagement') }}">
+                  <i class="fa-solid fa-calendar-check"></i>
+                  <span>Leave</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('documentManagement') }}">
+                  <i class="fa-solid fa-folder-open"></i>
+                  <span>Document</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('expiryAlerts') }}">
+                  <i class="fa-solid fa-triangle-exclamation"></i>
+                  <span>Expiry Alerts</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('performance') }}">
+                  <i class="fas fa-chart-line"></i>
+                  <span>Performance</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('reportPage') }}">
+                  <i class="fa-solid fa-chart-bar"></i>
+                  <span>Reports</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('logout') }}" class="logout-btn">
+                  <i class="fa-solid fa-right-from-bracket"></i>
+                  <span>Logout</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </aside>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <section>
+      <div class="portal">
+        <div style="max-width: 1200px; margin: 0 auto">
+          <h1>Manage Employees</h1>
+
+          <!-- Flash Messages -->
+          {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+              {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">
+                  <i class="fa-solid fa-circle-info"></i>
+                  {{ message }}
+                </div>
+              {% endfor %}
+            {% endif %}
+          {% endwith %}
+
+          <div class="document-section">
+            <div class="document-header">
+              <h2 class="section-title">
+                <i class="fa-solid fa-users"></i>
+                Employee List
+              </h2>
+              <a href="{{ url_for('addEmployees') }}" class="upload-btn">
+                <i class="fa-solid fa-user-plus"></i>
+                Add Employee
+              </a>
+            </div>
+
+            <!-- Employee Table -->
+            <div class="table-container">
+              <table class="employee-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Position</th>
+                    <th>Hire Date</th>
+                    <th style="text-align: center;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% if employees %}
+                    {% for emp in employees %}
+                    <tr>
+                      <td>{{ emp.employee_id }}</td>
+                      <td>{{ emp.first_name }} {{ emp.last_name }}</td>
+                      <td>{{ emp.email }}</td>
+                      <td>{{ emp.phone }}</td>
+                      <td>{{ emp.position }}</td>
+                      <td>{{ emp.hire_date }}</td>
+                      <td class="actions">
+                        <!-- Edit Button -->
+                        <a 
+                          href="{{ url_for('editEmployee', employee_id=emp.employee_id) }}" 
+                          class="action-icon-btn" 
+                          title="Edit Employee"
+                        >
+                          <i class="fa fa-edit"></i>
+                        </a>
+
+                        <!-- Delete Button -->
+                        <form
+                          action="{{ url_for('deleteEmployee', employee_id=emp.employee_id) }}"
+                          method="POST"
+                          style="display: inline"
+                          onsubmit="return confirm('Are you sure you want to delete {{ emp.first_name }} {{ emp.last_name }}? This action cannot be undone.');"
+                        >
+                          <button
+                            class="action-icon-btn"
+                            type="submit"
+                            title="Delete Employee"
+                          >
+                            <i class="fa fa-trash"></i>
+                          </button>
+                        </form>
+                      </td>
+                    </tr>
+                    {% endfor %}
+                  {% else %}
+                    <tr>
+                      <td colspan="7" style="text-align: center; padding: 3rem;">
+                        <i class="fa-solid fa-users" style="font-size: 3rem; opacity: 0.3; display: block; margin-bottom: 1rem;"></i>
+                        <p class="text-muted">No employees found</p>
+                      </td>
+                    </tr>
+                  {% endif %}
+                </tbody>
+              </table>
+            </div>
+
+            {% if employees %}
+            <div style="margin-top: 1.5rem; padding: 1rem; background: #f8f9fa; border-radius: 8px;">
+              <p style="margin: 0; color: #666;">
+                <i class="fa-solid fa-info-circle"></i>
+                Total Employees: <strong>{{ employees|length }}</strong>
+              </p>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </section>
+  </body>
+</html>

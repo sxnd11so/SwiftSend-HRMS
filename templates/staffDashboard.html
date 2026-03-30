@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SwiftSend - Employee Portal</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+    <script
+      src="https://kit.fontawesome.com/2edf4de781.js"
+      crossorigin="anonymous"
+    ></script>
+  </head>
+  <body>
+    <!-- Sidebar -->
+    <header>
+      <div class="container">
+        <aside>
+          <div class="top">
+            <div class="logo2">
+              <i class="fa-solid fa-truck"></i>
+              <h1>SwiftSend</h1>
+            </div>
+          </div>
+
+          <div class="sidebar">
+            <ul class="sidebar">
+              <li>
+                <a href="{{ url_for('dashboard') }}" class="active">
+                  <i class="fa-solid fa-house"></i>
+                  <span>Home</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('profile_page') }}">
+                  <i class="fa-solid fa-user"></i>
+                  <span>My Profile</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('request_page') }}">
+                  <i class="fa-solid fa-calendar-check"></i>
+                  <span>Leave Request</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('documents_page') }}">
+                  <i class="fa-solid fa-file-alt"></i>
+                  <span>Documents</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('notifications_page') }}">
+                  <i class="fa-solid fa-bell"></i>
+                  <span>Notifications</span>
+                </a>
+              </li>
+              <li>
+                <!-- Updated logout to use Flask route -->
+                <a href="{{ url_for('logout') }}" class="logout-btn">
+                  <i class="fa-solid fa-right-from-bracket"></i>
+                  <span>Logout</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </aside>
+      </div>
+    </header>
+
+    <!-- Main Portal Section -->
+    <section class="portal">
+      <h1>Employee Portal</h1>
+      <div class="portal-con">
+        <div class="cards">
+          <!-- Welcome Banner -->
+          <div class="card welcome-banner">
+            <!-- Dynamic welcome message with user's name -->
+            <h2>Welcome back, {{ user.first_name }} {{ user.last_name }}!</h2>
+            <p>Here's what's happening with your work today.</p>
+          </div>
+
+          <!-- Stats Grid -->
+          <div class="card" style="grid-column: 1 / -1">
+            <div class="card-header">
+              <h3>Quick Stats</h3>
+            </div>
+            <div class="stats-grid">
+              <div class="stat-card">
+                <div class="stat-icon blue">
+                  <i class="fa-solid fa-calendar-days"></i>
+                </div>
+   <div class="card-value">{{ remaining_leaves }}</div>
+<div class="card-label">Days Leave Remaining</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon green">
+                  <i class="fa-solid fa-clock"></i>
+                </div>
+                <div class="card-value">160</div>
+                <div class="card-label">Hours This Month</div>
+              </div>
+             
+             
+            </div>
+          </div>
+
+          <!-- Upcoming Schedule -->
+         
+
+          <!-- Quick Actions -->
+          <div class="card" style="grid-column: 1 / -1">
+            <div class="card-header">
+              <h3>Quick Actions</h3>
+            </div>
+            <div class="quick-actions">
+              <a href="request.html" class="action-btn">
+                <i class="fa-solid fa-calendar-plus"></i>
+                <span>Request Leave</span>
+              </a>
+              <a href="documents.html" class="action-btn">
+                <i class="fa-solid fa-file-arrow-up"></i>
+                <span>Upload Document</span>
+              </a>
+              <a href="myProfile.html" class="action-btn">
+                <i class="fa-solid fa-user-pen"></i>
+                <span>Update Profile</span>
+              </a>
+              <a href="notifications.html" class="action-btn">
+                <i class="fa-solid fa-bell"></i>
+                <span>View Notifications</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- Pending Requests -->
+          <div class="card">
+            <div class="card-header">
+              <h3>Pending Requests</h3>
+              <i class="fa-solid fa-hourglass-half"></i>
+            </div>
+            <div class="card-body">
+              <div class="list-item">
+                <div class="list-item-content">
+                  <div class="list-item-title">Leave Request</div>
+                  <div class="list-item-subtitle">Jan 15-17, 2025</div>
+                </div>
+                <span class="badge warning">Pending</span>
+              </div>
+              <div class="list-item">
+                <div class="list-item-content">
+                  <div class="list-item-title">Shift Swap Request</div>
+                  <div class="list-item-subtitle">With Mike Johnson</div>
+                </div>
+                <span class="badge warning">Pending</span>
+              </div>
+            </div>
+          </div>
+
+      
+
+        
+        </div>
+      </div>
+    </section>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+  </body>
+</html>

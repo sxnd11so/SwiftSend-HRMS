@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SwiftSend - Upload Document</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+    <script
+      src="https://kit.fontawesome.com/2edf4de781.js"
+      crossorigin="anonymous"
+    ></script>
+  </head>
+  <body>
+    <!-- Sidebar -->
+    <header>
+      <div class="container">
+        <aside>
+          <div class="top">
+            <div class="logo2">
+              <i class="fa-solid fa-truck"></i>
+              <h1>SwiftSend</h1>
+            </div>
+          </div>
+
+          <div class="sidebar">
+            <ul class="sidebar">
+              <li>
+                <a href="{{ url_for('hr_dashboard') }}">
+                  <i class="fa-solid fa-house"></i>
+                  <span>Home</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('manageEmployees') }}">
+                  <i class="fa-solid fa-users"></i>
+                  <span>Employees</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('leaveManagement') }}">
+                  <i class="fa-solid fa-calendar-check"></i>
+                  <span>Leave</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('documentManagement') }}" class="active">
+                  <i class="fa-solid fa-folder-open"></i>
+                  <span>Document</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('expiryAlerts') }}">
+                  <i class="fa-solid fa-triangle-exclamation"></i>
+                  <span>Expiry Alerts</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('performance') }}">
+                  <i class="fas fa-chart-line"></i>
+                  <span>Performance</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('reportPage') }}">
+                  <i class="fa-solid fa-chart-bar"></i>
+                  <span>Reports</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('logout') }}" class="logout-btn">
+                  <i class="fa-solid fa-right-from-bracket"></i>
+                  <span>Logout</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </aside>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <section>
+      <div class="portal">
+        <div style="max-width: 800px; margin: 0 auto">
+          <div style="margin-bottom: 2rem">
+            <a href="{{ url_for('documentManagement') }}" style="color: var(--accent-primary); text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; border-radius: var(--border-radius-sm); transition: var(--transition);">
+              <i class="fa fa-arrow-left"></i> Back to Document Management
+            </a>
+          </div>
+
+          <h1>Upload Employee Document</h1>
+
+          {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+              {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+              {% endfor %}
+            {% endif %}
+          {% endwith %}
+
+          <div class="form-container">
+            <form action="{{ url_for('submit_document_hr') }}" method="POST" enctype="multipart/form-data">
+              
+              <div class="form-group">
+                <label for="employee_id">Select Employee <span style="color: red;">*</span></label>
+                <select id="employee_id" name="employee_id" required>
+                  <option value="">-- Choose Employee --</option>
+                  {% for emp in employees %}
+                    <option value="{{ emp.employee_id }}">
+                      {{ emp.first_name }} {{ emp.last_name }} - {{ emp.position }}
+                    </option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="doc_type">Document Type <span style="color: red;">*</span></label>
+                <select id="doc_type" name="doc_type" required onchange="toggleExpiryDate()">
+                  <option value="">-- Select Type --</option>
+                  <option value="Contract">Employment Contract</option>
+                  <option value="ID">ID Document</option>
+                  <option value="Licence">Driver's Licence</option>
+                  <option value="Certification">PDP/Certification</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="document_file">Upload File <span style="color: red;">*</span></label>
+                <input
+                  type="file"
+                  id="document_file"
+                  name="document_file"
+                  accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                  required
+                  onchange="displayFileName()"
+                />
+                <small>Allowed formats: PDF, JPG, PNG, DOC, DOCX (Max 5MB)</small>
+                <div id="file-name-display"></div>
+              </div>
+
+              <div class="form-group">
+                <label for="issue_date">Issue Date <span style="color: red;">*</span></label>
+                <input
+                  type="date"
+                  id="issue_date"
+                  name="issue_date"
+                  required
+                />
+              </div>
+
+              <div class="form-group" id="expiry_date_group">
+                <label for="expiry_date">Expiry Date</label>
+                <input
+                  type="date"
+                  id="expiry_date"
+                  name="expiry_date"
+                />
+                <small>Leave empty for documents without expiry (like ID documents)</small>
+              </div>
+
+              <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                <button type="submit" class="btn btn-primary">
+                  <i class="fa fa-upload"></i> Upload Document
+                </button>
+                <a href="{{ url_for('documentManagement') }}" class="btn btn-secondary">
+                  <i class="fa fa-times"></i> Cancel
+                </a>
+              </div>
+            </form>
+          </div>
+
+          <!-- Help Section -->
+          <div style="margin-top: 2rem; padding: 1.5rem; background: var(--card-bg); border-radius: var(--border-radius); border-left: 4px solid var(--accent-primary);">
+            <h3 style="color: var(--accent-primary); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+              <i class="fa fa-info-circle"></i> Upload Guidelines
+            </h3>
+            <ul style="color: var(--text-secondary); line-height: 1.8;">
+              <li>Maximum file size: 5MB</li>
+              <li>Supported formats: PDF, JPG, PNG, DOC, DOCX</li>
+              <li>ID documents do not require an expiry date</li>
+              <li>Driver's licences and certifications must have expiry dates</li>
+              <li>Files are automatically renamed for security and organization</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <script>
+      function displayFileName() {
+        const input = document.getElementById('document_file');
+        const display = document.getElementById('file-name-display');
+        
+        if (input.files && input.files[0]) {
+          const file = input.files[0];
+          const fileSize = (file.size / (1024 * 1024)).toFixed(2);
+          
+          if (file.size > 5 * 1024 * 1024) {
+            display.innerHTML = '<i class="fa fa-exclamation-circle"></i> File too large! Maximum size is 5MB.';
+            display.style.display = 'block';
+            display.style.marginTop = '0.75rem';
+            display.style.padding = '0.75rem';
+            display.style.background = 'var(--danger-bg)';
+            display.style.color = 'var(--danger-color)';
+            display.style.fontWeight = '600';
+            display.style.borderRadius = 'var(--border-radius-sm)';
+            display.style.borderLeft = '4px solid var(--danger-color)';
+            input.value = '';
+          } else {
+            display.innerHTML = `<i class="fa fa-file"></i> ${file.name} (${fileSize} MB)`;
+            display.style.display = 'block';
+            display.style.marginTop = '0.75rem';
+            display.style.padding = '0.75rem';
+            display.style.background = 'var(--info-bg)';
+            display.style.color = 'var(--accent-primary)';
+            display.style.fontWeight = '600';
+            display.style.borderRadius = 'var(--border-radius-sm)';
+            display.style.borderLeft = '4px solid var(--accent-primary)';
+          }
+        }
+      }
+
+      function toggleExpiryDate() {
+        const docType = document.getElementById('doc_type').value;
+        const expiryGroup = document.getElementById('expiry_date_group');
+        const expiryInput = document.getElementById('expiry_date');
+        
+        if (docType === 'ID') {
+          expiryGroup.style.display = 'none';
+          expiryInput.required = false;
+          expiryInput.value = '';
+        } else {
+          expiryGroup.style.display = 'block';
+          if (docType === 'Licence' || docType === 'Certification') {
+            expiryInput.required = true;
+          } else {
+            expiryInput.required = false;
+          }
+        }
+      }
+
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('issue_date').setAttribute('max', today);
+      document.getElementById('expiry_date').setAttribute('min', today);
+    </script>
+  </body>
+</html>

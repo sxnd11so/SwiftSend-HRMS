@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Documents - SwiftSend HRMS</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+  </head>
+  <body>
+    <header>
+      <div class="container">
+        <aside>
+          <div class="top">
+            <div class="logo2">
+              <i class="fa-solid fa-truck"></i>
+              <h1>SwiftSend</h1>
+            </div>
+          </div>
+
+          <div class="sidebar">
+            <ul class="sidebar">
+              <li>
+                <a href="{{ url_for('dashboard') }}">
+                  <i class="fa-solid fa-house"></i>
+                  <span>Home</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('profile_page') }}">
+                  <i class="fa-solid fa-user"></i>
+                  <span>My Profile</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('request_page') }}">
+                  <i class="fa-solid fa-calendar-check"></i>
+                  <span>Leave Request</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('documents_page') }}" class="active">
+                  <i class="fa-solid fa-file-alt"></i>
+                  <span>Documents</span>
+                </a>
+              </li>
+              <li>
+                <!-- No route for notifications yet -->
+                <a href="{{ url_for('notifications_page') }}">
+                  <i class="fa-solid fa-bell"></i>
+                  <span>Notifications</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('logout') }}" class="logout-btn">
+                  <i class="fa-solid fa-right-from-bracket"></i>
+                  <span>Logout</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </aside>
+      </div>
+    </header>
+
+    <main class="portal">
+      <div class="document-header">
+        <h1>My Documents</h1>
+        Updated upload button to use proper form
+        <form
+          action="{{ url_for('upload_document') }}"
+          method="POST"
+          enctype="multipart/form-data"
+          style="display: inline"
+        >
+          <div class="document-header">
+            <a
+              href="{{ url_for('uploadDocument') }}"
+              class="upload-btn"
+            >
+              <i class="fas fa-upload"></i>
+              Upload Document
+            </a>
+          </div>
+        </form>
+      </div>
+
+      <div class="portal-con">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-header">
+              <span class="stat-title">Total Documents</span>
+              <div class="stat-icon blue">
+                <i class="fas fa-file-alt"></i>
+              </div>
+            </div>
+            <div class="stat-value">{{ total_documents|default(0) }}</div>
+          </div>
+
+          <div class="stat-card valid">
+            <div class="stat-header">
+              <span class="stat-title">Valid Documents</span>
+              <div class="stat-icon green">
+                <i class="fas fa-check-circle"></i>
+              </div>
+            </div>
+            <div class="stat-value">{{ valid_documents|default(0) }}</div>
+          </div>
+
+          <div class="stat-card expiring">
+            <div class="stat-header">
+              <span class="stat-title">Expiring Soon</span>
+              <div class="stat-icon orange">
+                <i class="fas fa-exclamation-triangle"></i>
+              </div>
+            </div>
+            <div class="stat-value">{{ expiring_soon|default(0) }}</div>
+          </div>
+        </div>
+
+        <div class="document-section">
+          <h2 class="section-title">Document Status</h2>
+          <p class="section-subtitle">
+            Your uploaded documents and their status
+          </p>
+
+          <div class="table-container">
+            {% if documents %}
+            <table>
+              <thead>
+                <tr>
+                  <th>Document Type</th>
+                  <th>File Name</th>
+                  <th>Upload Date</th>
+                  <th>Expiry Date</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for doc in documents %}
+                <tr>
+                  <td>{{ doc.document_type }}</td>
+                  <td>{{ doc.file_name }}</td>
+                  <td>
+                    {{ doc.upload_date.strftime('%Y-%m-%d') if doc.upload_date
+                    else 'N/A' }}
+                  </td>
+                  <td>
+                    {{ doc.expiry_date.strftime('%Y-%m-%d') if doc.expiry_date
+                    else 'N/A' }}
+                  </td>
+                  <td>
+                    Fixed status badge to handle different statuses
+                    <span class="status-badge {{ doc.status|lower }}">
+                      {% if doc.status == 'Valid' %}
+                      <i class="fas fa-check"></i>
+                      {% elif doc.status == 'Expired' %}
+                      <i class="fas fa-times-circle"></i>
+                      {% elif doc.status == 'Expiring' %}
+                      <i class="fas fa-exclamation-circle"></i>
+                      {% endif %} {{ doc.status }}
+                    </span>
+                  </td>
+                  <td>
+                    Updated action buttons with proper links
+                    <div class="actions">
+                      <a
+                        href="{{ url_for('view_document', doc_id=doc.id) }}"
+                        class="action-icon-btn"
+                        title="View"
+                      >
+                        <i class="fas fa-eye"></i>
+                      </a>
+                      <a
+                        href="{{ url_for('download_document', doc_id=doc.id) }}"
+                        class="action-icon-btn"
+                        title="Download"
+                      >
+                        <i class="fas fa-download"></i>
+                      </a>
+                    </div>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+            {% else %}
+            <div class="empty-state">
+              <i class="fas fa-file-alt"></i>
+              <p>No documents uploaded yet</p>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>

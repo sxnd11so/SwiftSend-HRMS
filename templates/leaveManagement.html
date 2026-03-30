@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SwiftSend - HR Management Portal</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+    <script
+      src="https://kit.fontawesome.com/2edf4de781.js"
+      crossorigin="anonymous"
+    ></script>
+  </head>
+  <body>
+    <!-- Sidebar -->
+    <header>
+      <div class="container">
+        <aside>
+          <div class="top">
+            <div class="logo2">
+              <i class="fa-solid fa-truck"></i>
+              <h1>SwiftSend</h1>
+            </div>
+          </div>
+
+          <div class="sidebar">
+            <ul class="sidebar">
+              <li>
+                <a href="{{ url_for('hr_dashboard') }}">
+                  <i class="fa-solid fa-house"></i>
+                  <span>Home</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('manageEmployees') }}">
+                  <i class="fa-solid fa-users"></i>
+                  <span>Employees</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('leaveManagement') }}" class="active">
+                  <i class="fa-solid fa-calendar-check"></i>
+                  <span>Leave</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('documentManagement') }}">
+                  <i class="fa-solid fa-folder-open"></i>
+                  <span>Document</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('expiryAlerts') }}">
+                  <i class="fa-solid fa-triangle-exclamation"></i>
+                  <span>Expiry Alerts</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('performance') }}">
+                  <i class="fas fa-chart-line"></i> 
+                  <span>Performance</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('reportPage') }}">
+                  <i class="fa-solid fa-chart-bar"></i>
+                  <span>Reports</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('logout') }}" class="logout-btn">
+                  <i class="fa-solid fa-right-from-bracket"></i>
+                  <span>Logout</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </aside>
+      </div>
+    </header>
+
+    <section>
+      <div class="portal">
+        <div style="max-width: 1200px; margin: 0 auto">
+          <h1>Leave Management</h1>
+
+          <!-- Flash Messages -->
+          {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+              {% for category, message in messages %}
+                <div class="alert alert-{{ category }}" style="margin-bottom: 1.5rem;">
+                  {{ message }}
+                </div>
+              {% endfor %}
+            {% endif %}
+          {% endwith %}
+
+       
+
+          <!-- Filter Tabs -->
+          <div class="filter-tabs" style="margin-bottom: 1.5rem;">
+            <button class="tab-btn active" onclick="filterLeaves('all')">
+              All Requests ({{ total_count }})
+            </button>
+            <button class="tab-btn" onclick="filterLeaves('pending')">
+              Pending ({{ pending_count }})
+            </button>
+            <button class="tab-btn" onclick="filterLeaves('approved')">
+              Approved ({{ approved_count }})
+            </button>
+            <button class="tab-btn" onclick="filterLeaves('rejected')">
+              Rejected ({{ rejected_count }})
+            </button>
+          </div>
+
+          <div class="document-section">
+            <h2 class="section-title">Leave Requests</h2>
+            <p class="section-subtitle">
+              Review and manage all employee leave requests.
+            </p>
+
+            <div class="table-container">
+              <table id="leaveTable">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Employee</th>
+                    <th>Type</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th>Days</th>
+                    <th>Reason</th>
+                    <th>Status</th>
+                    <th>Approval Date</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% if leaves %}
+                    {% for leave in leaves %}
+                    <tr data-status="{{ leave.status.lower() }}">
+                      <td>{{ leave.leave_id }}</td>
+                      <td>
+                        <strong>{{ leave.first_name }} {{ leave.last_name }}</strong>
+                      </td>
+                      <td>
+                        <span class="type-badge">{{ leave.leave_type }}</span>
+                      </td>
+                      <td>{{ leave.start_date.strftime('%Y-%m-%d') }}</td>
+                      <td>{{ leave.end_date.strftime('%Y-%m-%d') }}</td>
+                      <td><strong>{{ "%.0f"|format(leave.days_requested) }}</strong></td>
+                      <td style="max-width: 200px;">{{ leave.reason or 'No reason provided' }}</td>
+                      <td>
+                        {% if leave.status == 'Approved' %}
+                          <span class="status-badge valid">Approved</span>
+                        {% elif leave.status == 'Rejected' %}
+                          <span class="status-badge expired">Rejected</span>
+                        {% else %}
+                          <span class="status-badge warning">Pending</span>
+                        {% endif %}
+                      </td>
+                      <td>{{ leave.approval_date.strftime('%Y-%m-%d') if leave.approval_date else '-' }}</td>
+                      <td class="actions">
+                        {% if leave.status == 'Pending' %}
+                          <form method="POST" action="{{ url_for('approve_leave', leave_id=leave.leave_id) }}" style="display: inline;">
+                            <button type="submit" class="btn btn-sm btn-success" title="Approve Request">
+                              <i class="fa-solid fa-check"></i>
+                            </button>
+                          </form>
+                          <form method="POST" action="{{ url_for('reject_leave', leave_id=leave.leave_id) }}" style="display: inline;">
+                            <button type="submit" class="btn btn-sm btn-danger" title="Reject Request" onclick="return confirm('Are you sure you want to reject this leave request?')">
+                              <i class="fa-solid fa-times"></i>
+                            </button>
+                          </form>
+                        {% else %}
+                          <span class="text-muted" style="font-size: 0.85rem;">No action</span>
+                        {% endif %}
+                      </td>
+                    </tr>
+                    {% endfor %}
+                  {% else %}
+                    <tr>
+                      <td colspan="10" style="text-align: center; padding: 3rem; color: #999;">
+                        No leave requests found.
+                      </td>
+                    </tr>
+                  {% endif %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <script>
+      // Filter leave requests by status
+      function filterLeaves(status) {
+        const rows = document.querySelectorAll('#leaveTable tbody tr[data-status]');
+        const tabs = document.querySelectorAll('.tab-btn');
+        
+        // Update active tab
+        tabs.forEach(tab => tab.classList.remove('active'));
+        event.target.classList.add('active');
+        
+        // Show/hide rows
+        rows.forEach(row => {
+          if (status === 'all' || row.dataset.status === status) {
+            row.style.display = '';
+          } else {
+            row.style.display = 'none';
+          }
+        });
+      }
+
+      // Confirm before rejecting
+      document.querySelectorAll('.btn-danger').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+          if (!confirm('Are you sure you want to reject this leave request?')) {
+            e.preventDefault();
+          }
+        });
+      });
+    </script>
+  </body>
+</html>

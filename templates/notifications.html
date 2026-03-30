@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SwiftSend - Employee Notifications</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+    <script
+      src="https://kit.fontawesome.com/2edf4de781.js"
+      crossorigin="anonymous"
+    ></script>
+  </head>
+  <body>
+    <header>
+      <div class="container">
+        <aside>
+          <div class="top">
+            <div class="logo2">
+              <i class="fa-solid fa-truck"></i>
+              <h1>SwiftSend</h1>
+            </div>
+          </div>
+
+          <div class="sidebar">
+            <ul class="sidebar">
+              <li>
+                <a href="{{ url_for('dashboard') }}">
+                  <i class="fa-solid fa-house"></i>
+                  <span>Home</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('profile_page') }}">
+                  <i class="fa-solid fa-user"></i>
+                  <span>My Profile</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('request_page') }}">
+                  <i class="fa-solid fa-calendar-check"></i>
+                  <span>Leave Request</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('documents_page') }}">
+                  <i class="fa-solid fa-file-alt"></i>
+                  <span>Documents</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('notifications_page') }}" class="active">
+                  <i class="fa-solid fa-bell"></i>
+                  <span>Notifications</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('logout') }}" class="logout-btn">
+                  <i class="fa-solid fa-right-from-bracket"></i>
+                  <span>Logout</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </aside>
+      </div>
+    </header>
+
+    <section>
+      <div class="portal">
+        <h1>Notifications</h1>
+
+        <!-- Notification Summary -->
+        <div class="stats-container" style="margin-bottom: 2rem;">
+          <div class="stat-card">
+            <div class="stat-icon" style="background-color: #f44336;">
+              <i class="fa-solid fa-exclamation-triangle"></i>
+            </div>
+            <div class="stat-info">
+              <h3>{{ expiring_docs_count }}</h3>
+              <p>Expiring Documents</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background-color: #2196F3;">
+              <i class="fa-solid fa-calendar-check"></i>
+            </div>
+            <div class="stat-info">
+              <h3>{{ leave_updates_count }}</h3>
+              <p>Leave Updates</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background-color: #9C27B0;">
+              <i class="fa-solid fa-bell"></i>
+            </div>
+            <div class="stat-info">
+              <h3>{{ total_notifications }}</h3>
+              <p>Total Notifications</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Leave Request Updates -->
+        <div class="document-section" style="margin-bottom: 2rem;">
+          <h2 class="section-title">
+            <i class="fa-solid fa-calendar-check" style="color: #2196F3; margin-right: 0.5rem;"></i>
+            Leave Request Updates
+          </h2>
+          <p class="section-subtitle">
+            Status updates on your leave requests
+          </p>
+
+          {% if leave_notifications and leave_notifications|length > 0 %}
+          <div class="notification-list">
+            {% for notif in leave_notifications %}
+            <div class="notification-item {% if notif.status == 'Approved' %}success{% elif notif.status == 'Rejected' %}danger{% else %}info{% endif %}">
+              <div class="notification-icon">
+                {% if notif.status == 'Approved' %}
+                  <i class="fa-solid fa-check-circle"></i>
+                {% elif notif.status == 'Rejected' %}
+                  <i class="fa-solid fa-times-circle"></i>
+                {% else %}
+                  <i class="fa-solid fa-clock"></i>
+                {% endif %}
+              </div>
+              <div class="notification-content">
+                <h3 class="notification-title">
+                  Leave Request {{ notif.status }}
+                </h3>
+                <p class="notification-message">
+                  Your {{ notif.leave_type }} leave request from 
+                  <strong>{{ notif.start_date.strftime('%d %b %Y') }}</strong> to 
+                  <strong>{{ notif.end_date.strftime('%d %b %Y') }}</strong> 
+                  ({{ "%.0f"|format(notif.days_requested) }} days) 
+                  has been {{ notif.status|lower }}.
+                  {% if notif.approval_date %}
+                  <br><small>Updated on: {{ notif.approval_date.strftime('%d %b %Y') }}</small>
+                  {% endif %}
+                </p>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <p class="no-data">
+            <i class="fa-solid fa-info-circle"></i> No leave request updates at this time.
+          </p>
+          {% endif %}
+        </div>
+
+        <!-- Document Expiry Alerts -->
+        <div class="document-section">
+          <h2 class="section-title">
+            <i class="fa-solid fa-file-circle-exclamation" style="color: #f44336; margin-right: 0.5rem;"></i>
+            Document Expiry Alerts
+          </h2>
+          <p class="section-subtitle">
+            These alerts notify you about expiring documents or licences that require renewal.
+          </p>
+
+          {% if expiring_documents and expiring_documents|length > 0 %}
+          <div class="notification-list">
+            {% for doc in expiring_documents %}
+            <div class="notification-item {% if doc.days_until_expiry <= 0 %}danger{% elif doc.days_until_expiry <= 30 %}warning{% else %}info{% endif %}">
+              <div class="notification-icon">
+                {% if doc.days_until_expiry <= 0 %}
+                  <i class="fa-solid fa-exclamation-triangle"></i>
+                {% else %}
+                  <i class="fa-solid fa-exclamation-circle"></i>
+                {% endif %}
+              </div>
+              <div class="notification-content">
+                <h3 class="notification-title">
+                  {% if doc.days_until_expiry <= 0 %}
+                    {{ doc.doc_type }} Expired
+                  {% elif doc.days_until_expiry <= 30 %}
+                    {{ doc.doc_type }} Expiring Soon
+                  {% else %}
+                    {{ doc.doc_type }} Renewal Reminder
+                  {% endif %}
+                </h3>
+                <p class="notification-message">
+                  {% if doc.days_until_expiry <= 0 %}
+                    Your {{ doc.doc_type }} expired on <strong>{{ doc.expiry_date.strftime('%d %b %Y') }}</strong>. 
+                    Please renew immediately to avoid compliance issues.
+                  {% elif doc.days_until_expiry <= 30 %}
+                    Your {{ doc.doc_type }} will expire on <strong>{{ doc.expiry_date.strftime('%d %b %Y') }}</strong> 
+                    (in {{ doc.days_until_expiry }} days). Please arrange renewal soon.
+                  {% else %}
+                    Your {{ doc.doc_type }} will expire on <strong>{{ doc.expiry_date.strftime('%d %b %Y') }}</strong> 
+                    (in {{ doc.days_until_expiry }} days).
+                  {% endif %}
+                </p>
+                <div class="notification-actions">
+                  <a href="{{ url_for('documents_page') }}" class="btn-link">
+                    <i class="fa-solid fa-folder-open"></i> View Documents
+                  </a>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <p class="no-data">
+            <i class="fa-solid fa-check-circle"></i> All your documents are up to date!
+          </p>
+          {% endif %}
+        </div>
+
+        <!-- System Alerts (if any) -->
+        {% if system_alerts and system_alerts|length > 0 %}
+        <div class="document-section" style="margin-top: 2rem;">
+          <h2 class="section-title">
+            <i class="fa-solid fa-bullhorn" style="color: #FF9800; margin-right: 0.5rem;"></i>
+            System Announcements
+          </h2>
+          <div class="notification-list">
+            {% for alert in system_alerts %}
+            <div class="notification-item info">
+              <div class="notification-icon">
+                <i class="fa-solid fa-info-circle"></i>
+              </div>
+              <div class="notification-content">
+                <h3 class="notification-title">{{ alert.title }}</h3>
+                <p class="notification-message">{{ alert.message }}</p>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </section>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+  </body>
+</html>

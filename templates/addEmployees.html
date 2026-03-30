@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Add Employee - SwiftSend HRMS</title>
+
+    <!-- Styles -->
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+
+    <!-- Font Awesome -->
+    <script
+      src="https://kit.fontawesome.com/2edf4de781.js"
+      crossorigin="anonymous"
+    ></script>
+  </head>
+  <body>
+    <!-- Sidebar -->
+    <header>
+      <div class="container">
+        <aside>
+          <div class="top">
+            <div class="logo2">
+              <i class="fa-solid fa-truck"></i>
+              <h1>SwiftSend</h1>
+            </div>
+          </div>
+
+          <div class="sidebar">
+            <ul class="sidebar">
+              <li>
+                <a href="{{ url_for('hr_dashboard') }}">
+                  <i class="fa-solid fa-house"></i>
+                  <span>Home</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('manageEmployees') }}" class="active">
+                  <i class="fa-solid fa-users"></i>
+                  <span>Employees</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('leaveManagement') }}">
+                  <i class="fa-solid fa-calendar-check"></i>
+                  <span>Leave</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('documentManagement') }}">
+                  <i class="fa-solid fa-folder-open"></i>
+                  <span>Document</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('expiryAlerts') }}">
+                  <i class="fa-solid fa-triangle-exclamation"></i>
+                  <span>Expiry Alerts</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('performance') }}">
+                  <i class="fas fa-chart-line"></i> 
+                  <span>Performance</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('reportPage') }}">
+                  <i class="fa-solid fa-chart-bar"></i>
+                  <span>Reports</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('logout') }}" class="logout-btn">
+                  <i class="fa-solid fa-right-from-bracket"></i>
+                  <span>Logout</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </aside>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <section>
+      <div class="portal">
+        <div style="max-width: 800px; margin: 0 auto">
+          <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
+            <a href="{{ url_for('manageEmployees') }}" class="btn btn-secondary">
+              <i class="fa-solid fa-arrow-left"></i> Back to Employee List
+            </a>
+          </div>
+
+          <h1><i class="fa-solid fa-user-plus"></i> Add New Employee</h1>
+
+          <!-- Flash Messages -->
+          {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+              {% for category, message in messages %}
+                <div class="alert alert-{{ category }}" style="margin-bottom: 1.5rem;">
+                  {{ message }}
+                </div>
+              {% endfor %}
+            {% endif %}
+          {% endwith %}
+
+          <div class="document-section">
+            <h2 class="section-title">
+              <i class="fa-solid fa-clipboard-list"></i> Employee Information
+            </h2>
+            <p class="section-subtitle">
+              Fill in the details below to add a new employee to the system.
+            </p>
+
+            <form action="{{ url_for('addEmployee') }}" method="POST" id="addEmployeeForm">
+              <!-- Personal Information -->
+              <div style="margin-bottom: 2rem;">
+                <h3 style="color: var(--accent-primary); margin-bottom: 1rem; font-size: 1.1rem;">
+                  <i class="fa-solid fa-user"></i> Personal Information
+                </h3>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                  <div class="form-group">
+                    <label for="first_name">First Name *</label>
+                    <input 
+                      type="text" 
+                      id="first_name" 
+                      name="first_name" 
+                      required 
+                      placeholder="John"
+                      maxlength="50"
+                    />
+                  </div>
+
+                  <div class="form-group">
+                    <label for="last_name">Last Name *</label>
+                    <input 
+                      type="text" 
+                      id="last_name" 
+                      name="last_name" 
+                      required 
+                      placeholder="Doe"
+                      maxlength="50"
+                    />
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="email">Email Address *</label>
+                  <input 
+                    type="email" 
+                    id="email" 
+                    name="email" 
+                    required 
+                    placeholder="john.doe@swiftsend.co.za"
+                    maxlength="100"
+                  />
+                  <small style="color: var(--text-muted); font-size: 0.85rem;">
+                    <i class="fa-solid fa-info-circle"></i> Must be a valid email address
+                  </small>
+                </div>
+
+                <div class="form-group">
+                  <label for="phone">Phone Number *</label>
+                  <input 
+                    type="tel" 
+                    id="phone" 
+                    name="phone" 
+                    required 
+                    placeholder="0821234567"
+                    maxlength="20"
+                    pattern="[0-9]{10,20}"
+                    title="Please enter a valid phone number (10-20 digits)"
+                  />
+                  <small style="color: var(--text-muted); font-size: 0.85rem;">
+                    <i class="fa-solid fa-info-circle"></i> Enter numbers only (e.g., 0821234567)
+                  </small>
+                </div>
+              </div>
+
+              <!-- Employment Details -->
+              <div style="margin-bottom: 2rem;">
+                <h3 style="color: var(--accent-primary); margin-bottom: 1rem; font-size: 1.1rem;">
+                  <i class="fa-solid fa-briefcase"></i> Employment Details
+                </h3>
+
+                <div class="form-group">
+                  <label for="position">Position *</label>
+                  <select id="position" name="position" required>
+                    <option value="">-- Select Position --</option>
+                    <option value="Courier Driver">Courier Driver</option>
+                    <option value="Operations Manager">Operations Manager</option>
+                    <option value="Fleet Manager">Fleet Manager</option>
+                    <option value="Customer Service Manager">Customer Service Manager</option>
+                    <option value="HR Manager">HR Manager</option>
+                    <option value="HR Coordinator">HR Coordinator</option>
+                    <option value="Administrative Assistant">Administrative Assistant</option>
+                    <option value="Customer Service Rep">Customer Service Rep</option>
+                    <option value="Warehouse Supervisor">Warehouse Supervisor</option>
+                    <option value="Warehouse Assistant">Warehouse Assistant</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="hire_date">Hire Date *</label>
+                  <input 
+                    type="date" 
+                    id="hire_date" 
+                    name="hire_date" 
+                    required 
+                    max="{{ today }}"
+                  />
+                  <small style="color: var(--text-muted); font-size: 0.85rem;">
+                    <i class="fa-solid fa-info-circle"></i> Cannot be a future date
+                  </small>
+                </div>
+              </div>
+
+              <!-- Leave Allocation -->
+              <div style="margin-bottom: 2rem;">
+                <h3 style="color: var(--accent-primary); margin-bottom: 1rem; font-size: 1.1rem;">
+                  <i class="fa-solid fa-calendar-days"></i> Leave Allocation
+                </h3>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                  <div class="form-group">
+                    <label for="annual_leave_days">Annual Leave Days</label>
+                    <input 
+                      type="number" 
+                      id="annual_leave_days" 
+                      name="annual_leave_days" 
+                      value="15" 
+                      min="0" 
+                      max="30"
+                    />
+                    <small style="color: var(--text-muted); font-size: 0.85rem;">
+                      Default: 15 days per year
+                    </small>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="sick_leave_days">Sick Leave Days</label>
+                    <input 
+                      type="number" 
+                      id="sick_leave_days" 
+                      name="sick_leave_days" 
+                      value="10" 
+                      min="0" 
+                      max="20"
+                    />
+                    <small style="color: var(--text-muted); font-size: 0.85rem;">
+                      Default: 10 days per year
+                    </small>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Login Credentials -->
+              <div style="margin-bottom: 2rem;">
+                <h3 style="color: var(--accent-primary); margin-bottom: 1rem; font-size: 1.1rem;">
+                  <i class="fa-solid fa-key"></i> Login Credentials
+                </h3>
+
+                <div class="form-group">
+                  <label for="username">Username *</label>
+                  <input 
+                    type="text" 
+                    id="username" 
+                    name="username" 
+                    required 
+                    placeholder="john.doe"
+                    maxlength="50"
+                    pattern="[a-zA-Z0-9._-]+"
+                    title="Username can only contain letters, numbers, dots, underscores, and hyphens"
+                  />
+                  <small style="color: var(--text-muted); font-size: 0.85rem;">
+                    <i class="fa-solid fa-info-circle"></i> Will be used for system login (e.g., john.doe)
+                  </small>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr auto; gap: 1rem; align-items: end;">
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <label for="password">Password *</label>
+                    <input 
+                      type="password" 
+                      id="password" 
+                      name="password" 
+                      required 
+                      placeholder="Enter secure password"
+                      minlength="8"
+                      maxlength="100"
+                    />
+                    <small style="color: var(--text-muted); font-size: 0.85rem;">
+                      <i class="fa-solid fa-info-circle"></i> Minimum 8 characters
+                    </small>
+                  </div>
+                  
+                  <button 
+                    type="button" 
+                    class="btn btn-secondary" 
+                    onclick="generatePassword()"
+                    style="margin-bottom: 0; height: fit-content;"
+                  >
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> Generate
+                  </button>
+                </div>
+
+                <div class="form-group">
+                  <label for="role">User Role *</label>
+                  <select id="role" name="role" required>
+                    <option value="Employee">Employee</option>
+                    <option value="Manager">Manager</option>
+                    <option value="HR">HR Staff</option>
+                  </select>
+                  <small style="color: var(--text-muted); font-size: 0.85rem;">
+                    <i class="fa-solid fa-info-circle"></i> Determines system access level
+                  </small>
+                </div>
+
+                <div style="background: var(--info-bg); padding: 1rem; border-radius: var(--border-radius); border-left: 4px solid var(--info-color); margin-top: 1rem;">
+                  <p style="margin: 0; color: var(--text-primary); font-size: 0.9rem;">
+                    <i class="fa-solid fa-circle-info"></i> <strong>Note:</strong> Please securely share the username and password with the employee after creation.
+                  </p>
+                </div>
+              </div>
+
+              <!-- Form Actions -->
+              <div style="display: flex; justify-content: flex-end; gap: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-light);">
+                <a href="{{ url_for('manageEmployees') }}" class="btn btn-secondary">
+                  <i class="fa-solid fa-times"></i> Cancel
+                </a>
+                <button type="submit" class="btn btn-primary">
+                  <i class="fa-solid fa-check"></i> Add Employee
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <script>
+      // Set today's date as max for hire date
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('hire_date').setAttribute('max', today);
+
+      // Generate random secure password
+      function generatePassword() {
+        const length = 12;
+        const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
+        let password = "";
+        
+        // Ensure at least one of each type
+        password += "ABCDEFGHIJKLMNOPQRSTUVWXYZ"[Math.floor(Math.random() * 26)];
+        password += "abcdefghijklmnopqrstuvwxyz"[Math.floor(Math.random() * 26)];
+        password += "0123456789"[Math.floor(Math.random() * 10)];
+        password += "!@#$%^&*"[Math.floor(Math.random() * 8)];
+        
+        // Fill the rest
+        for (let i = password.length; i < length; i++) {
+          password += charset[Math.floor(Math.random() * charset.length)];
+        }
+        
+        // Shuffle the password
+        password = password.split('').sort(() => Math.random() - 0.5).join('');
+        
+        document.getElementById('password').type = 'text';
+        document.getElementById('password').value = password;
+        
+        // Show success message
+        const passwordInput = document.getElementById('password');
+        passwordInput.style.borderColor = 'var(--success-color)';
+        setTimeout(() => {
+          passwordInput.style.borderColor = '';
+        }, 2000);
+      }
+
+      // Auto-generate username from name fields
+      document.getElementById('first_name').addEventListener('blur', generateUsername);
+      document.getElementById('last_name').addEventListener('blur', generateUsername);
+
+      function generateUsername() {
+        const firstName = document.getElementById('first_name').value.trim().toLowerCase();
+        const lastName = document.getElementById('last_name').value.trim().toLowerCase();
+        
+        if (firstName && lastName) {
+          const username = `${firstName}.${lastName}`;
+          document.getElementById('username').value = username;
+        }
+      }
+
+      // Form validation feedback
+      const form = document.getElementById('addEmployeeForm');
+      form.addEventListener('submit', function(e) {
+        const phoneInput = document.getElementById('phone');
+        const phonePattern = /^[0-9]{10,20}$/;
+        
+        if (!phonePattern.test(phoneInput.value)) {
+          e.preventDefault();
+          alert('Please enter a valid phone number (10-20 digits, numbers only)');
+          phoneInput.focus();
+          return false;
+        }
+
+        const password = document.getElementById('password').value;
+        if (password.length < 8) {
+          e.preventDefault();
+          alert('Password must be at least 8 characters long');
+          document.getElementById('password').focus();
+          return false;
+        }
+      });
+
+      // Toggle password visibility
+      document.getElementById('password').addEventListener('dblclick', function() {
+        this.type = this.type === 'password' ? 'text' : 'password';
+      });
+
+      // Auto-hide flash messages
+      document.addEventListener('DOMContentLoaded', function() {
+        const alerts = document.querySelectorAll('.alert');
+        alerts.forEach(function(alert) {
+          setTimeout(function() {
+            alert.style.opacity = '0';
+            alert.style.transition = 'opacity 0.5s ease';
+            setTimeout(function() {
+              alert.remove();
+            }, 500);
+          }, 5000);
+        });
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Reports - SwiftSend HRMS</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+    <script
+      src="https://kit.fontawesome.com/2edf4de781.js"
+      crossorigin="anonymous"
+    ></script>
+  </head>
+  <body>
+    <!-- Sidebar -->
+    <header>
+      <div class="container">
+        <aside>
+          <div class="top">
+            <div class="logo2">
+              <i class="fa-solid fa-truck"></i>
+              <h1>SwiftSend</h1>
+            </div>
+          </div>
+
+          <div class="sidebar">
+            <ul class="sidebar">
+              <li>
+                <a href="{{ url_for('hr_dashboard') }}">
+                  <i class="fa-solid fa-house"></i>
+                  <span>Home</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('manageEmployees') }}">
+                  <i class="fa-solid fa-users"></i>
+                  <span>Employees</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('leaveManagement') }}">
+                  <i class="fa-solid fa-calendar-check"></i>
+                  <span>Leave</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('documentManagement') }}">
+                  <i class="fa-solid fa-folder-open"></i>
+                  <span>Document</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('expiryAlerts') }}">
+                  <i class="fa-solid fa-triangle-exclamation"></i>
+                  <span>Expiry Alerts</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('performance') }}">
+                  <i class="fas fa-chart-line"></i>
+                  <span>Performance</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('reportPage') }}" class="active">
+                  <i class="fa-solid fa-chart-bar"></i>
+                  <span>Reports</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('logout') }}" class="logout-btn">
+                  <i class="fa-solid fa-right-from-bracket"></i>
+                  <span>Logout</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </aside>
+      </div>
+    </header>
+
+    <section>
+      <div class="portal">
+        <div style="max-width: 1200px; margin: 0 auto">
+          <h1><i class="fa-solid fa-chart-bar"></i> HR Reports & Analytics</h1>
+
+          <!-- Flash Messages -->
+          {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+              {% for category, message in messages %}
+                <div class="alert alert-{{ category }}" style="margin-bottom: 1.5rem;">
+                  {{ message }}
+                </div>
+              {% endfor %}
+            {% endif %}
+          {% endwith %}
+
+          <!-- Report Type Selection -->
+          <div class="cards" style="margin-bottom: 2rem;">
+            <div class="card" style="grid-column: 1 / -1;">
+              <div class="card-header">
+                <h3><i class="fa-solid fa-download"></i> Generate Reports</h3>
+              </div>
+              <div class="card-body">
+                <p style="color: var(--text-muted); margin-bottom: 1.5rem;">
+                  Select a report type to generate comprehensive HR analytics and summaries.
+                </p>
+                <div class="quick-actions">
+                  <a href="{{ url_for('generate_report', report_type='employee_roster') }}" class="action-btn">
+                    <i class="fa-solid fa-users"></i>
+                    <span>Employee Roster</span>
+                  </a>
+                  <a href="{{ url_for('generate_report', report_type='leave_summary') }}" class="action-btn">
+                    <i class="fa-solid fa-calendar-days"></i>
+                    <span>Leave Summary</span>
+                  </a>
+                  
+                  <a href="{{ url_for('generate_report', report_type='monthly_summary') }}" class="action-btn">
+                    <i class="fa-solid fa-file-lines"></i>
+                    <span>Monthly Summary</span>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Activities -->
+          <div class="document-section" style="margin-bottom: 2rem;">
+            <h2 class="section-title">
+              <i class="fa-solid fa-clock-rotate-left"></i> Recent HR Activities
+            </h2>
+            <p class="section-subtitle">
+              Latest actions and updates in the HR system.
+            </p>
+
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Employee</th>
+                    <th>Activity Type</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% if activities %}
+                    {% for activity in activities %}
+                    <tr>
+                      <td>
+                        <strong>{{ activity.employee }}</strong>
+                      </td>
+                      <td>
+                        <span class="type-badge">
+                          <i class="fa-solid fa-calendar-check"></i> {{ activity.leave_type }} Leave
+                        </span>
+                      </td>
+                      <td>
+                        {% if activity.status == 'Approved' %}
+                          <span class="status-badge valid">
+                            <i class="fa-solid fa-check-circle"></i> Approved
+                          </span>
+                        {% elif activity.status == 'Rejected' %}
+                          <span class="status-badge expired">
+                            <i class="fa-solid fa-times-circle"></i> Rejected
+                          </span>
+                        {% else %}
+                          <span class="status-badge warning">
+                            <i class="fa-solid fa-clock"></i> Pending
+                          </span>
+                        {% endif %}
+                      </td>
+                      <td>
+                        {% if activity.date %}
+                          {{ activity.date.strftime('%d %b %Y') }}
+                        {% else %}
+                          N/A
+                        {% endif %}
+                      </td>
+                    </tr>
+                    {% endfor %}
+                  {% else %}
+                    <tr>
+                      <td colspan="4" style="text-align: center; padding: 3rem; color: var(--text-light);">
+                        <i class="fa-solid fa-inbox" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.3; display: block;"></i>
+                        No recent activities to display.
+                      </td>
+                    </tr>
+                  {% endif %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- System Overview -->
+          <div class="cards">
+            <div class="card">
+              <div class="card-header">
+                <h3><i class="fa-solid fa-database"></i> System Health</h3>
+              </div>
+              <div class="card-body">
+                <div style="margin-bottom: 1rem;">
+                  <span class="card-label">Database Status</span>
+                  <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem;">
+                    <span class="status-badge valid">
+                      <i class="fa-solid fa-circle-check"></i> Online
+                    </span>
+                  </div>
+                </div>
+                <div style="margin-bottom: 1rem;">
+                  <span class="card-label">Last Backup</span>
+                  <p style="margin: 0.5rem 0 0 0; font-weight: 600;">Today, 02:00 AM</p>
+                </div>
+                <div>
+                  <span class="card-label">Active Users</span>
+                  <p style="margin: 0.5rem 0 0 0; font-weight: 600;">{{ total_employees }} registered</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <h3><i class="fa-solid fa-calendar"></i> Leave Management</h3>
+              </div>
+              <div class="card-body">
+                <div style="margin-bottom: 1rem;">
+                  <span class="card-label">Pending Approvals</span>
+                  <p class="card-value" style="color: var(--warning-color);">{{ pending_leaves }}</p>
+                </div>
+                <div style="margin-bottom: 1rem;">
+                  <span class="card-label">Approved This Month</span>
+                  <p style="margin: 0.5rem 0 0 0; font-weight: 600; color: var(--success-color);">
+                    {{ approved_this_month }}
+                  </p>
+                </div>
+                <div>
+                  <span class="card-label">Rejected This Month</span>
+                  <p style="margin: 0.5rem 0 0 0; font-weight: 600; color: var(--danger-color);">
+                    {{ rejected_this_month }}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <h3><i class="fa-solid fa-file-circle-check"></i> Compliance</h3>
+              </div>
+              <div class="card-body">
+                <div style="margin-bottom: 1rem;">
+                  <span class="card-label">Unread Alerts</span>
+                  <p class="card-value" style="color: var(--danger-color);">{{ expiring_docs }}</p>
+                </div>
+                <div style="margin-bottom: 1rem;">
+                  <span class="card-label">Documents Tracked</span>
+                  <p style="margin: 0.5rem 0 0 0; font-weight: 600;">{{ total_documents }} total</p>
+                </div>
+                <div>
+                  <span class="card-label">Compliance Rate</span>
+                  <p style="margin: 0.5rem 0 0 0; font-weight: 600; color: {% if compliance_rate >= 80 %}var(--success-color){% elif compliance_rate >= 60 %}var(--warning-color){% else %}var(--danger-color){% endif %}">
+                    {{ compliance_rate }}%
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Department Distribution -->
+          <div class="document-section" style="margin-top: 2rem;">
+            <h2 class="section-title">
+              <i class="fa-solid fa-chart-pie"></i> Department Distribution
+            </h2>
+            <p class="section-subtitle">
+              Employee distribution across organizational departments.
+            </p>
+
+            <div style="padding: 1rem 0;">
+              {% for dept in departments %}
+              <div style="margin-bottom: 1.5rem;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                  <span style="font-weight: 600; color: var(--text-primary);">{{ dept.department }}</span>
+                  <span style="font-weight: 600; color: var(--accent-secondary)">
+                    {{ dept.count }} ({{ dept.percentage }}%)
+                  </span>
+                </div>
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width: {{ dept.percentage }}%"></div>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+
+          <!-- Export Options -->
+          <div class="document-section" style="margin-top: 2rem;">
+            <h2 class="section-title">
+              <i class="fa-solid fa-file-export"></i> Export Reports
+            </h2>
+            <p class="section-subtitle">
+              Download reports in various formats for offline access and distribution.
+            </p>
+
+            <div style="margin-bottom: 1.5rem;">
+              <label for="export-type" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">
+                Select Report Type:
+              </label>
+              <select id="export-type" style="padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; width: 100%; max-width: 400px; font-size: 1rem;">
+                <option value="employee-roster">Employee Roster</option>
+                <option value="leave-summary">Leave Summary</option>
+                <option value="document-compliance">Document Compliance</option>
+                <option value="monthly-summary">Monthly Summary</option>
+              </select>
+            </div>
+
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+              <button onclick="exportToPDF()" class="btn btn-success">
+                <i class="fa-solid fa-file-pdf"></i> Export to PDF
+              </button>
+              <button onclick="exportToExcel()" class="btn btn-success">
+                <i class="fa-solid fa-file-excel"></i> Export to Excel
+              </button>
+              <button onclick="exportToCSV()" class="btn btn-success">
+                <i class="fa-solid fa-file-csv"></i> Export to CSV
+              </button>
+              <button class="btn btn-outline" onclick="window.print()">
+                <i class="fa-solid fa-print"></i> Print Report
+              </button>
+            </div>
+          </div>
+
+          <!-- Quick Insights -->
+          <div class="document-section" style="margin-top: 2rem; background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%); border-left: 4px solid var(--warning-color);">
+            <h3 style="color: var(--warning-color); margin-bottom: 1rem;">
+              <i class="fa-solid fa-lightbulb"></i> Quick Insights
+            </h3>
+            <ul style="margin-left: 1.5rem; color: var(--text-primary); line-height: 1.8;">
+              <li>
+                Total workforce: <strong>{{ total_employees }} employees</strong> across all departments.
+              </li>
+              <li>
+                <strong>{{ pending_leaves }} leave request(s)</strong> awaiting HR approval.
+              </li>
+              {% if expiring_docs > 0 %}
+              <li style="color: var(--danger-color);">
+                <strong>{{ expiring_docs }} unread alert(s)</strong> for expiring documents - immediate attention required.
+              </li>
+              {% else %}
+              <li style="color: var(--success-color);">
+                All expiry alerts have been reviewed. System compliance is up to date.
+              </li>
+              {% endif %}
+              <li>
+                Monthly reports are available for download in multiple formats for management review.
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <script>
+      function exportToPDF() {
+        const reportType = document.getElementById('export-type').value;
+        window.location.href = `/export-report/pdf/${reportType}`;
+      }
+
+      function exportToExcel() {
+        const reportType = document.getElementById('export-type').value;
+        window.location.href = `/export-report/excel/${reportType}`;
+      }
+
+      function exportToCSV() {
+        const reportType = document.getElementById('export-type').value;
+        window.location.href = `/export-report/csv/${reportType}`;
+      }
+    </script>
+  </body>
+</html>

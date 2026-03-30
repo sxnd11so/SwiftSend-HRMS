@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SwiftSend - Edit Employee</title>
+
+    <!-- Styles -->
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+
+    <!-- Font Awesome -->
+    <script
+      src="https://kit.fontawesome.com/2edf4de781.js"
+      crossorigin="anonymous"
+    ></script>
+  </head>
+  <body>
+    <!-- Sidebar -->
+    <header>
+      <div class="container">
+        <aside>
+          <div class="top">
+            <div class="logo2">
+              <i class="fa-solid fa-truck"></i>
+              <h1>SwiftSend</h1>
+            </div>
+          </div>
+
+          <div class="sidebar">
+            <ul class="sidebar">
+              <li>
+                <a href="{{ url_for('hr_dashboard') }}">
+                  <i class="fa-solid fa-house"></i>
+                  <span>Home</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('manageEmployees') }}" class="active">
+                  <i class="fa-solid fa-users"></i>
+                  <span>Employees</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('leaveManagement') }}">
+                  <i class="fa-solid fa-calendar-check"></i>
+                  <span>Leave</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('documentManagement') }}">
+                  <i class="fa-solid fa-folder-open"></i>
+                  <span>Document</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('expiryAlerts') }}">
+                  <i class="fa-solid fa-triangle-exclamation"></i>
+                  <span>Expiry Alerts</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('performance') }}">
+                  <i class="fas fa-chart-line"></i>
+                  <span>Performance</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('reportPage') }}">
+                  <i class="fa-solid fa-chart-bar"></i>
+                  <span>Reports</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('logout') }}" class="logout-btn">
+                  <i class="fa-solid fa-right-from-bracket"></i>
+                  <span>Logout</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </aside>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <section>
+      <div class="portal">
+        <div style="max-width: 800px; margin: 0 auto">
+          <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
+            <a href="{{ url_for('manageEmployees') }}" class="btn-secondary" style="padding: 0.75rem 1rem; text-decoration: none;">
+              <i class="fa-solid fa-arrow-left"></i> Back to Employees
+            </a>
+            <h1 style="margin: 0;">Edit Employee</h1>
+          </div>
+
+          <!-- Flash Messages -->
+          {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+              {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">
+                  <i class="fa-solid fa-circle-info"></i>
+                  {{ message }}
+                </div>
+              {% endfor %}
+            {% endif %}
+          {% endwith %}
+
+          <div class="document-section">
+            <h2 class="section-title">
+              <i class="fa-solid fa-user-edit"></i>
+              Update Employee Information
+            </h2>
+            <p class="section-subtitle">
+              Editing: <strong>{{ employee.first_name }} {{ employee.last_name }}</strong> (ID: {{ employee.employee_id }})
+            </p>
+
+            <form action="{{ url_for('updateEmployee', employee_id=employee.employee_id) }}" method="POST">
+              <!-- Personal Information -->
+              <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem;">
+                <h3 style="margin-top: 0; color: #2d7fa6; font-size: 1.1rem; margin-bottom: 1.5rem;">
+                  <i class="fa-solid fa-user"></i> Personal Information
+                </h3>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+                  <div class="form-group">
+                    <label for="first_name">First Name <span style="color: red;">*</span></label>
+                    <input
+                      type="text"
+                      id="first_name"
+                      name="first_name"
+                      value="{{ employee.first_name }}"
+                      required
+                    />
+                  </div>
+
+                  <div class="form-group">
+                    <label for="last_name">Last Name <span style="color: red;">*</span></label>
+                    <input
+                      type="text"
+                      id="last_name"
+                      name="last_name"
+                      value="{{ employee.last_name }}"
+                      required
+                    />
+                  </div>
+
+                  <div class="form-group">
+                    <label for="email">Email <span style="color: red;">*</span></label>
+                    <input
+                      type="email"
+                      id="email"
+                      name="email"
+                      value="{{ employee.email }}"
+                      required
+                    />
+                  </div>
+
+                  <div class="form-group">
+                    <label for="phone">Phone Number <span style="color: red;">*</span></label>
+                    <input
+                      type="tel"
+                      id="phone"
+                      name="phone"
+                      value="{{ employee.phone }}"
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <!-- Employment Information -->
+              <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem;">
+                <h3 style="margin-top: 0; color: #2d7fa6; font-size: 1.1rem; margin-bottom: 1.5rem;">
+                  <i class="fa-solid fa-briefcase"></i> Employment Information
+                </h3>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+                  <div class="form-group">
+                    <label for="position">Position <span style="color: red;">*</span></label>
+                    <select id="position" name="position" required>
+                      <option value="">Select Position</option>
+                      <option value="Courier Driver" {% if employee.position == 'Courier Driver' %}selected{% endif %}>Courier Driver</option>
+                      <option value="Administrative Assistant" {% if employee.position == 'Administrative Assistant' %}selected{% endif %}>Administrative Assistant</option>
+                      <option value="HR Manager" {% if employee.position == 'HR Manager' %}selected{% endif %}>HR Manager</option>
+                      <option value="HR Coordinator" {% if employee.position == 'HR Coordinator' %}selected{% endif %}>HR Coordinator</option>
+                      <option value="Operations Manager" {% if employee.position == 'Operations Manager' %}selected{% endif %}>Operations Manager</option>
+                      <option value="Fleet Manager" {% if employee.position == 'Fleet Manager' %}selected{% endif %}>Fleet Manager</option>
+                      <option value="Customer Service Manager" {% if employee.position == 'Customer Service Manager' %}selected{% endif %}>Customer Service Manager</option>
+                      <option value="Customer Service Rep" {% if employee.position == 'Customer Service Rep' %}selected{% endif %}>Customer Service Rep</option>
+                      <option value="Warehouse Supervisor" {% if employee.position == 'Warehouse Supervisor' %}selected{% endif %}>Warehouse Supervisor</option>
+                      <option value="Warehouse Assistant" {% if employee.position == 'Warehouse Assistant' %}selected{% endif %}>Warehouse Assistant</option>
+                    </select>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="hire_date">Hire Date <span style="color: red;">*</span></label>
+                    <input
+                      type="date"
+                      id="hire_date"
+                      name="hire_date"
+                      value="{{ employee.hire_date }}"
+                      max="{{ today }}"
+                      required
+                    />
+                  </div>
+
+                  <div class="form-group">
+                    <label for="role">System Role <span style="color: red;">*</span></label>
+                    <select id="role" name="role" required>
+                      <option value="Employee" {% if employee.role == 'Employee' %}selected{% endif %}>Employee</option>
+                      <option value="Manager" {% if employee.role == 'Manager' %}selected{% endif %}>Manager</option>
+                      <option value="HR" {% if employee.role == 'HR' %}selected{% endif %}>HR</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Leave Allocation -->
+              <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem;">
+                <h3 style="margin-top: 0; color: #2d7fa6; font-size: 1.1rem; margin-bottom: 1.5rem;">
+                  <i class="fa-solid fa-calendar-check"></i> Leave Allocation
+                </h3>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+                  <div class="form-group">
+                    <label for="annual_leave_days">Annual Leave Days <span style="color: red;">*</span></label>
+                    <input
+                      type="number"
+                      id="annual_leave_days"
+                      name="annual_leave_days"
+                      value="{{ employee.annual_leave_days }}"
+                      min="0"
+                      max="30"
+                      required
+                    />
+                    <small style="color: #666; display: block; margin-top: 0.25rem;">Standard: 15 days</small>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="sick_leave_days">Sick Leave Days <span style="color: red;">*</span></label>
+                    <input
+                      type="number"
+                      id="sick_leave_days"
+                      name="sick_leave_days"
+                      value="{{ employee.sick_leave_days }}"
+                      min="0"
+                      max="30"
+                      required
+                    />
+                    <small style="color: #666; display: block; margin-top: 0.25rem;">Standard: 10 days</small>
+                  </div>
+
+                  <div class="form-group">
+                    <label>Leave Days Used (Current)</label>
+                    <input
+                      type="text"
+                      value="{{ employee.leave_days_used }}"
+                      disabled
+                      style="background: #e9ecef; cursor: not-allowed;"
+                    />
+                    <small style="color: #666; display: block; margin-top: 0.25rem;">Managed through leave requests</small>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Account Information (Read-only) -->
+              {% if employee.username %}
+              <div style="background: #fff3cd; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem; border-left: 4px solid #ffc107;">
+                <h3 style="margin-top: 0; color: #856404; font-size: 1.1rem; margin-bottom: 1rem;">
+                  <i class="fa-solid fa-user-lock"></i> Account Information
+                </h3>
+                <p style="margin: 0; color: #856404;">
+                  <strong>Username:</strong> {{ employee.username }}
+                </p>
+                <small style="color: #856404; display: block; margin-top: 0.5rem;">
+                  <i class="fa-solid fa-info-circle"></i> Contact IT to reset password or change username
+                </small>
+              </div>
+              {% endif %}
+
+              <!-- Action Buttons -->
+              <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                <a href="{{ url_for('manageEmployees') }}" class="btn-secondary" style="text-decoration: none;">
+                  <i class="fa-solid fa-times"></i>
+                  Cancel
+                </a>
+                <button type="submit" class="btn-primary">
+                  <i class="fa-solid fa-save"></i>
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+  </body>
+</html>

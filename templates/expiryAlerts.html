@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SwiftSend - HR Management Portal</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+    <script
+      src="https://kit.fontawesome.com/2edf4de781.js"
+      crossorigin="anonymous"
+    ></script>
+  </head>
+  <body>
+    <!-- Sidebar -->
+    <header>
+      <div class="container">
+        <aside>
+          <div class="top">
+            <div class="logo2">
+              <i class="fa-solid fa-truck"></i>
+              <h1>SwiftSend</h1>
+            </div>
+          </div>
+
+          <div class="sidebar">
+            <ul class="sidebar">
+              <li>
+                <a href="{{ url_for('hr_dashboard') }}">
+                  <i class="fa-solid fa-house"></i>
+                  <span>Home</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('manageEmployees') }}">
+                  <i class="fa-solid fa-users"></i>
+                  <span>Employees</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('leaveManagement') }}">
+                  <i class="fa-solid fa-calendar-check"></i>
+                  <span>Leave</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('documentManagement') }}">
+                  <i class="fa-solid fa-folder-open"></i>
+                  <span>Document</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('expiryAlerts') }}" class="active">
+                  <i class="fa-solid fa-triangle-exclamation"></i>
+                  <span>Expiry Alerts</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('performance') }}">
+                  <i class="fas fa-chart-line"></i>
+                  <span>Performance</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('reportPage') }}">
+                  <i class="fa-solid fa-chart-bar"></i>
+                  <span>Reports</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('logout') }}" class="logout-btn">
+                  <i class="fa-solid fa-right-from-bracket"></i>
+                  <span>Logout</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </aside>
+      </div>
+    </header>
+
+    <section>
+      <div class="portal">
+        <div style="max-width: 1200px; margin: 0 auto">
+          <h1>Expiry Alerts</h1>
+
+          <!-- Flash Messages -->
+          {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+              {% for category, message in messages %}
+                <div class="alert alert-{{ category }}" style="margin-bottom: 1.5rem;">
+                  {{ message }}
+                </div>
+              {% endfor %}
+            {% endif %}
+          {% endwith %}
+
+          <!-- Summary Cards -->
+          <div class="stats-container" style="margin-bottom: 2rem;">
+            <div class="stat-card">
+              <div class="stat-icon red">
+                <i class="fa-solid fa-exclamation-circle"></i>
+              </div>
+              <div class="stat-info">
+                <h3>{{ critical_alerts }}</h3>
+                <p>Critical Alerts (Expired)</p>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon orange">
+                <i class="fa-solid fa-exclamation-triangle"></i>
+              </div>
+              <div class="stat-info">
+                <h3>{{ urgent_alerts }}</h3>
+                <p>Urgent Alerts (≤30 days)</p>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon blue">
+                <i class="fa-solid fa-bell"></i>
+              </div>
+              <div class="stat-info">
+                <h3>{{ upcoming_alerts }}</h3>
+                <p>Upcoming Alerts (31-60 days)</p>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon green">
+                <i class="fa-solid fa-check-circle"></i>
+              </div>
+              <div class="stat-info">
+                <h3>{{ acknowledged_alerts }}</h3>
+                <p>Acknowledged Alerts</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Filter Tabs -->
+          <div class="filter-tabs" style="margin-bottom: 1.5rem;">
+            <button class="tab-btn active" onclick="filterAlerts('all')">
+              All Alerts ({{ total_alerts }})
+            </button>
+            <button class="tab-btn" onclick="filterAlerts('critical')">
+              Critical ({{ critical_alerts }})
+            </button>
+            <button class="tab-btn" onclick="filterAlerts('urgent')">
+              Urgent ({{ urgent_alerts }})
+            </button>
+            <button class="tab-btn" onclick="filterAlerts('upcoming')">
+              Upcoming ({{ upcoming_alerts }})
+            </button>
+          </div>
+
+          <div class="document-section">
+            <h2 class="section-title">
+              <i class="fa-solid fa-triangle-exclamation" style="color: var(--danger-color);"></i>
+              Document Expiry Alerts
+            </h2>
+            <p class="section-subtitle">
+              Monitor and manage all document expiry alerts across the organization.
+            </p>
+
+            <div class="table-container">
+              <table id="alertsTable">
+                <thead>
+                  <tr>
+                    <th>Priority</th>
+                    <th>Employee</th>
+                    <th>Document Type</th>
+                    <th>Expiry Date</th>
+                    <th>Days Remaining</th>
+                    <th>Alert Date</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% if alerts %}
+                    {% for alert in alerts %}
+                    <tr data-priority="{{ alert.priority_class }}">
+                      <td>
+                        {% if alert.priority_class == 'critical' %}
+                          <span class="status-badge expired">
+                            <i class="fa-solid fa-exclamation-circle"></i> Critical
+                          </span>
+                        {% elif alert.priority_class == 'urgent' %}
+                          <span class="status-badge expiring">
+                            <i class="fa-solid fa-exclamation-triangle"></i> Urgent
+                          </span>
+                        {% else %}
+                          <span class="status-badge valid">
+                            <i class="fa-solid fa-info-circle"></i> Upcoming
+                          </span>
+                        {% endif %}
+                      </td>
+                      <td>
+                        <strong>{{ alert.first_name }} {{ alert.last_name }}</strong>
+                        <br>
+                        <small style="color: var(--text-muted);">{{ alert.position }}</small>
+                      </td>
+                      <td>
+                        <span class="type-badge">{{ alert.doc_type }}</span>
+                      </td>
+                      <td>
+                        <strong>{{ alert.expiry_date.strftime('%Y-%m-%d') }}</strong>
+                      </td>
+                      <td>
+                        {% if alert.days_until_expiry < 0 %}
+                          <strong style="color: var(--danger-color);">
+                            <i class="fa-solid fa-times-circle"></i> 
+                            Expired {{ alert.days_until_expiry|abs }} days ago
+                          </strong>
+                        {% elif alert.days_until_expiry == 0 %}
+                          <strong style="color: var(--danger-color);">
+                            <i class="fa-solid fa-exclamation-circle"></i> 
+                            Expires Today!
+                          </strong>
+                        {% elif alert.days_until_expiry <= 7 %}
+                          <strong style="color: var(--danger-color);">
+                            {{ alert.days_until_expiry }} days
+                          </strong>
+                        {% elif alert.days_until_expiry <= 30 %}
+                          <strong style="color: var(--warning-color);">
+                            {{ alert.days_until_expiry }} days
+                          </strong>
+                        {% else %}
+                          <span style="color: var(--text-muted);">
+                            {{ alert.days_until_expiry }} days
+                          </span>
+                        {% endif %}
+                      </td>
+                      <td>{{ alert.alert_date.strftime('%Y-%m-%d') if alert.alert_date else 'N/A' }}</td>
+                      <td>
+                        {% if alert.status == 'Read' %}
+                          <span class="status-badge valid">
+                            <i class="fa-solid fa-check"></i> Acknowledged
+                          </span>
+                        {% else %}
+                          <span class="status-badge warning">
+                            <i class="fa-solid fa-bell"></i> Unread
+                          </span>
+                        {% endif %}
+                      </td>
+                      <td class="actions">
+                        {% if alert.alert_id and alert.status == 'Unread' %}
+                          <form method="POST" action="{{ url_for('mark_alert_read', alert_id=alert.alert_id) }}" style="display: inline;">
+                            <button type="submit" class="btn btn-sm btn-success" title="Mark as Read">
+                              <i class="fa-solid fa-check"></i> Acknowledge
+                            </button>
+                          </form>
+                        {% elif alert.alert_id and alert.status == 'Read' %}
+                          <button class="btn btn-sm btn-secondary" disabled title="Already Acknowledged">
+                            <i class="fa-solid fa-check"></i> Acknowledged
+                          </button>
+                        {% else %}
+                          <span style="color: var(--text-muted); font-size: 0.85rem;">No alert record</span>
+                        {% endif %}
+                       
+                      </td>
+                    </tr>
+                    {% endfor %}
+                  {% else %}
+                    <tr>
+                      <td colspan="8" style="text-align: center; padding: 3rem; color: var(--text-light);">
+                        <i class="fa-solid fa-check-circle" style="font-size: 3rem; opacity: 0.3; display: block; margin-bottom: 1rem; color: var(--success-color);"></i>
+                        <strong style="font-size: 1.1rem;">No expiry alerts at this time.</strong>
+                        <p style="margin-top: 0.5rem;">All documents are up to date!</p>
+                      </td>
+                    </tr>
+                  {% endif %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Quick Actions -->
+          {% if critical_alerts > 0 or urgent_alerts > 0 %}
+          <div class="document-section" style="margin-top: 2rem; background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%); border-left: 4px solid var(--warning-color);">
+            <h3 style="color: var(--warning-color); margin-bottom: 1rem;">
+              <i class="fa-solid fa-lightbulb"></i> Recommended Actions
+            </h3>
+            <ul style="margin-left: 1.5rem; color: var(--text-primary);">
+              {% if critical_alerts > 0 %}
+              <li style="margin-bottom: 0.5rem;">
+                <strong>{{ critical_alerts }} expired document(s)</strong> require immediate attention and renewal.
+              </li>
+              {% endif %}
+              {% if urgent_alerts > 0 %}
+              <li style="margin-bottom: 0.5rem;">
+                <strong>{{ urgent_alerts }} document(s)</strong> will expire within 30 days. Contact employees to arrange renewals.
+              </li>
+              {% endif %}
+              <li>
+                Use the Document Management page to upload renewed documents.
+              </li>
+            </ul>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </section>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <script>
+      // Filter alerts by priority
+      function filterAlerts(priority) {
+        const rows = document.querySelectorAll('#alertsTable tbody tr[data-priority]');
+        const tabs = document.querySelectorAll('.tab-btn');
+        
+        // Update active tab
+        tabs.forEach(tab => tab.classList.remove('active'));
+        event.target.classList.add('active');
+        
+        // Show/hide rows
+        rows.forEach(row => {
+          if (priority === 'all' || row.dataset.priority === priority) {
+            row.style.display = '';
+          } else {
+            row.style.display = 'none';
+          }
+        });
+      }
+
+      // View employee details
+      function viewEmployee(employeeId) {
+        alert('View employee functionality coming soon!\nEmployee ID: ' + employeeId);
+        // In production: window.location.href = '/employee-details/' + employeeId;
+      }
+    </script>
+  </body>
+</html>

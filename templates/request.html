@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SwiftSend - Leave Request</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+    <script
+      src="https://kit.fontawesome.com/2edf4de781.js"
+      crossorigin="anonymous"
+    ></script>
+  </head>
+  <body>
+    <!-- Sidebar -->
+    <header>
+      <div class="container">
+        <aside>
+          <div class="top">
+            <div class="logo2">
+              <i class="fa-solid fa-truck"></i>
+              <h1>SwiftSend</h1>
+            </div>
+          </div>
+
+          <div class="sidebar">
+            <ul class="sidebar">
+              <li>
+                <a href="{{ url_for('dashboard') }}">
+                  <i class="fa-solid fa-house"></i>
+                  <span>Home</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('profile_page') }}">
+                  <i class="fa-solid fa-user"></i>
+                  <span>My Profile</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('request_page') }}" class="active">
+                  <i class="fa-solid fa-calendar-check"></i>
+                  <span>Leave Request</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('documents_page') }}">
+                  <i class="fa-solid fa-file-alt"></i>
+                  <span>Documents</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('notifications_page') }}" >
+                  <i class="fa-solid fa-bell"></i>
+                  <span>Notifications</span>
+                </a>
+              </li>
+              <li>
+                <a href="{{ url_for('logout') }}" class="logout-btn">
+                  <i class="fa-solid fa-right-from-bracket"></i>
+                  <span>Logout</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </aside>
+      </div>
+    </header>
+
+    <section>
+      <!-- leaveRequest.html -->
+      <div class="portal">
+        <h1>Leave Requests</h1>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="alert alert-{{ category }}" style="margin-bottom: 1.5rem; padding: 1rem; border-radius: 8px; background-color: {% if category == 'success' %}#d4edda{% elif category == 'error' %}#f8d7da{% else %}#d1ecf1{% endif %}; color: {% if category == 'success' %}#155724{% elif category == 'error' %}#721c24{% else %}#0c5460{% endif %};">
+                {{ message }}
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+       
+
+        <!-- Leave Request Form -->
+        <div class="document-section">
+          <h2 class="section-title">Submit New Leave Request</h2>
+          <form class="login-form" action="{{ url_for('submit_leave') }}" method="POST">
+            <div class="form-group">
+              <label for="leave_type">Leave Type</label>
+              <select id="leave_type" name="leave_type" required>
+                <option value="">Select Leave Type</option>
+                <option value="Annual">Annual Leave</option>
+                <option value="Sick">Sick Leave</option>
+                <option value="Study">Study Leave</option>
+                <option value="Unpaid">Unpaid Leave</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="start_date">Start Date</label>
+              <input type="date" id="start_date" name="start_date" required min="{{ today }}" />
+            </div>
+
+            <div class="form-group">
+              <label for="end_date">End Date</label>
+              <input type="date" id="end_date" name="end_date" required min="{{ today }}" />
+            </div>
+
+            <div class="form-group">
+              <label for="reason">Reason</label>
+              <textarea
+                id="reason"
+                name="reason"
+                rows="3"
+                placeholder="Enter reason for leave..."
+                required
+              ></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-full">
+              <i class="fa fa-paper-plane"></i> Submit Request
+            </button>
+          </form>
+        </div>
+
+        <!-- Leave Request History -->
+        <div class="document-section" style="margin-top: 2rem">
+          <h2 class="section-title">My Leave History</h2>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Leave ID</th>
+                  <th>Type</th>
+                  <th>Start Date</th>
+                  <th>End Date</th>
+                  <th>Days</th>
+                  <th>Reason</th>
+                  <th>Status</th>
+                  <th>Approval Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% if leave_history %}
+                  {% for leave in leave_history %}
+                  <tr>
+                    <td>{{ leave.leave_id }}</td>
+                    <td>{{ leave.leave_type }}</td>
+                    <td>{{ leave.start_date.strftime('%Y-%m-%d') }}</td>
+                    <td>{{ leave.end_date.strftime('%Y-%m-%d') }}</td>
+                    <td>{{ "%.1f"|format(leave.days_requested) }}</td>
+                    <td>{{ leave.reason or 'No reason provided' }}</td>
+                    <td>
+                      {% if leave.status == 'Approved' %}
+                        <span class="status-badge valid">Approved</span>
+                      {% elif leave.status == 'Rejected' %}
+                        <span class="status-badge expired">Rejected</span>
+                      {% else %}
+                        <span class="status-badge warning">Pending</span>
+                      {% endif %}
+                    </td>
+                    <td>{{ leave.approval_date.strftime('%Y-%m-%d') if leave.approval_date else '-' }}</td>
+                  </tr>
+                  {% endfor %}
+                {% else %}
+                  <tr>
+                    <td colspan="8" style="text-align: center; padding: 2rem; color: #666;">
+                      No leave requests found. Submit your first leave request above.
+                    </td>
+                  </tr>
+                {% endif %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <script>
+      // Validate end date is not before start date
+      document.getElementById('start_date').addEventListener('change', function() {
+        document.getElementById('end_date').min = this.value;
+      });
+    </script>
+  </body>
+</html>
