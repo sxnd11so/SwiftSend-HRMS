@@ -1,0 +1,4 @@
+Requirements to run:
+-Flask
+-mysql-connector-python
+-Werkzeug
